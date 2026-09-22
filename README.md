@@ -1,5 +1,8 @@
 # WorkPulse — daily work tracker
 
+> 🌐 **Live Website Link:** [https://employee-performance-tracker-hazel.vercel.app](https://employee-performance-tracker-hazel.vercel.app)  
+> ⚡ **Alternative Live Link:** [https://automated-sterling-tone-novelty.trycloudflare.com](https://automated-sterling-tone-novelty.trycloudflare.com)
+
 A personal work log that replaces the Google Sheet: log what you did each day (tickets, chats, KYC, calls, emails, training), see it on a dashboard / timeline / calendar, and generate weekly reports you can download as Word, Markdown or PDF.
 
 **Stack:** Next.js (App Router) · TypeScript · Tailwind CSS · PostgreSQL (Supabase / Neon / any Postgres) · Drizzle ORM
