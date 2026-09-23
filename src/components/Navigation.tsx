@@ -24,6 +24,8 @@ import {
   UserCheck,
   Building2,
   Users,
+  Eye,
+  ArrowLeft,
 } from "lucide-react";
 import { availabilityMeta } from "@/lib/utils";
 
@@ -68,7 +70,7 @@ export function Avatar({
 }
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { currentUser, employee, activeTab, setActiveTab, theme, toggleTheme, isAdmin, logout } = useApp();
+  const { currentUser, employee, activeTab, setActiveTab, theme, toggleTheme, isAdmin, logout, isImpersonating, originalAdmin, stopImpersonating } = useApp();
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const avail = availabilityMeta(employee?.availability);
@@ -135,8 +137,31 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         </div>
 
         <nav className="flex-1 space-y-4 overflow-y-auto px-3 pb-4 pt-1">
+          {/* Inspection Return Panel in Sidebar */}
+          {isImpersonating && originalAdmin && (
+            <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 p-2.5 mb-2">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-rose-500">
+                <Eye className="h-3.5 w-3.5" />
+                <span>Inspecting Mode</span>
+              </div>
+              <p className="mt-1 text-[11px] text-zinc-600 dark:text-zinc-400">
+                Viewing as <strong>{currentUser?.name}</strong>
+              </p>
+              <button
+                onClick={() => {
+                  onClose();
+                  stopImpersonating();
+                }}
+                className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-md bg-rose-600 py-1.5 text-xs font-semibold text-white hover:bg-rose-500 transition shadow"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Return to Admin</span>
+              </button>
+            </div>
+          )}
+
           {/* Admin Command Sector Tab */}
-          {isAdmin && (
+          {isAdmin && !isImpersonating && (
             <div>
               <p className="px-2.5 pb-1 text-[11px] font-bold uppercase tracking-wide text-rose-500/90 dark:text-rose-400 flex items-center gap-1">
                 <Shield className="h-3 w-3" />
@@ -279,6 +304,9 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
     employee,
     isAdmin,
     logout,
+    isImpersonating,
+    originalAdmin,
+    stopImpersonating,
   } = useApp();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState(searchQuery);
@@ -309,11 +337,16 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
 
       <div className="flex items-center gap-2">
         <h1 className="text-sm font-semibold">{PAGE_TITLES[activeTab] ?? "WorkPulse"}</h1>
-        {activeTab === "admin-hub" && (
+        {isImpersonating ? (
+          <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-500 border border-rose-500/30">
+            <Eye className="h-3 w-3" />
+            INSPECTING: {currentUser?.name}
+          </span>
+        ) : activeTab === "admin-hub" ? (
           <span className="rounded-full bg-rose-500/10 px-2 py-0.5 text-[10px] font-bold text-rose-500 border border-rose-500/20">
             ADMIN CLEARANCE
           </span>
-        )}
+        ) : null}
       </div>
 
       <div className="ml-auto flex items-center gap-1.5">
@@ -377,6 +410,18 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
             </div>
           )}
         </div>
+
+        {/* Exit Inspection button if inspecting */}
+        {isImpersonating && (
+          <button
+            onClick={stopImpersonating}
+            className="inline-flex items-center gap-1.5 rounded-md bg-rose-600 hover:bg-rose-500 text-white px-2.5 py-1 text-xs font-semibold shadow-sm transition"
+            title="Exit inspection and return to Admin Hub"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            <span className="hidden md:inline">Return to Admin</span>
+          </button>
+        )}
 
         {/* Action Button */}
         <button

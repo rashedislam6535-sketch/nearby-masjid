@@ -34,6 +34,9 @@ interface AppContextType {
   login: (credentials: { email: string; password?: string; role?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   switchUser: (userId: number) => Promise<void>;
+  originalAdmin: User | null;
+  isImpersonating: boolean;
+  stopImpersonating: () => Promise<void>;
   notifications: NotificationItem[];
   unreadCount: number;
   markNotificationAsRead: (id: number) => void;
@@ -61,6 +64,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const READ_KEY = "workpulse_read_notifications";
 const AUTH_KEY = "workpulse_auth_session";
+const ORIGINAL_ADMIN_KEY = "workpulse_original_admin";
 
 function applyThemeClass(t: Theme) {
   const root = document.documentElement;
@@ -79,6 +83,7 @@ function loadReadIds(): number[] {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [employee, setEmployee] = useState<EmployeeProfile | null>(null);
+  const [originalAdmin, setOriginalAdmin] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [theme, setThemeState] = useState<Theme>("light");
@@ -130,6 +135,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (session && session.user) {
           setCurrentUser(session.user);
           if (session.employee) setEmployee(session.employee);
+        }
+      }
+
+      const origRaw = localStorage.getItem(ORIGINAL_ADMIN_KEY);
+      if (origRaw) {
+        const orig = JSON.parse(origRaw);
+        if (orig && orig.id) {
+          setOriginalAdmin(orig);
         }
       }
     } catch (e) {
@@ -248,8 +261,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     setCurrentUser(null);
     setEmployee(null);
+    setOriginalAdmin(null);
     try {
       localStorage.removeItem(AUTH_KEY);
+      localStorage.removeItem(ORIGINAL_ADMIN_KEY);
     } catch {}
     toast({
       title: "Signed out",
@@ -269,6 +284,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
         const data = await res.json();
         if (data.user) {
+          // If we are currently an administrator and not yet inspecting someone, remember the admin user
+          if (!originalAdmin && currentUser && (currentUser.role === "admin" || currentUser.role === "manager")) {
+            setOriginalAdmin(currentUser);
+            try {
+              localStorage.setItem(ORIGINAL_ADMIN_KEY, JSON.stringify(currentUser));
+            } catch {}
+          }
+
           setCurrentUser(data.user);
           if (data.employee) setEmployee(data.employee);
           try {
@@ -282,8 +305,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             );
           } catch {}
           toast({
-            title: `Switched view to ${data.user.name}`,
-            description: `Role: ${data.user.role} · Department: ${data.user.department}`,
+            title: `Inspecting ${data.user.name}'s Workspace`,
+            description: `Viewing role: ${data.user.role} · Use the top banner anytime to return to Admin.`,
             variant: "default",
           });
           setDataVersion((v) => v + 1);
@@ -292,8 +315,64 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         toast({ title: "Could not switch user", description: err.message, variant: "error" });
       }
     },
-    [toast]
+    [currentUser, originalAdmin, toast]
   );
+
+  // Return to Admin Command Sector from inspection mode
+  const stopImpersonating = useCallback(async () => {
+    let adminToRestore = originalAdmin;
+    if (!adminToRestore) {
+      try {
+        const saved = localStorage.getItem(ORIGINAL_ADMIN_KEY);
+        if (saved) adminToRestore = JSON.parse(saved);
+      } catch {}
+    }
+
+    if (!adminToRestore) {
+      toast({
+        title: "No Admin Session Found",
+        description: "Could not locate original administrator credentials. Please sign in again.",
+        variant: "error",
+      });
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/dashboard?userId=${adminToRestore.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUser(data.user);
+        if (data.employee) setEmployee(data.employee);
+        try {
+          localStorage.setItem(
+            AUTH_KEY,
+            JSON.stringify({
+              user: data.user,
+              employee: data.employee,
+              token: `wp_admin_${data.user.id}`,
+            })
+          );
+        } catch {}
+      } else {
+        setCurrentUser(adminToRestore);
+      }
+
+      setOriginalAdmin(null);
+      try {
+        localStorage.removeItem(ORIGINAL_ADMIN_KEY);
+      } catch {}
+
+      setActiveTab("admin-hub");
+      toast({
+        title: "Returned to Admin Command Hub",
+        description: `Welcome back, ${adminToRestore.name}!`,
+        variant: "success",
+      });
+      setDataVersion((v) => v + 1);
+    } catch (err: any) {
+      toast({ title: "Error returning to admin", description: err.message, variant: "error" });
+    }
+  }, [originalAdmin, toast]);
 
   const persistRead = (ids: number[]) => {
     try {
@@ -342,6 +421,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         login,
         logout,
         switchUser,
+        originalAdmin,
+        isImpersonating: Boolean(originalAdmin),
+        stopImpersonating,
         notifications,
         unreadCount,
         markNotificationAsRead,

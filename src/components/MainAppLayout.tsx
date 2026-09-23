@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import React, { useState } from "react";
@@ -14,9 +16,10 @@ import { LogActivityPage } from "@/components/ActivityLogForm";
 import { AdminHubView } from "@/components/AdminHubView";
 import { LoginView } from "@/components/auth/LoginView";
 import { Toaster, ConfirmDialog } from "@/components/Feedback";
+import { Eye, ArrowLeft, Shield } from "lucide-react";
 
 export function MainAppLayout() {
-  const { activeTab, currentUser, isAuthenticated, authLoading } = useApp();
+  const { activeTab, currentUser, isAuthenticated, authLoading, isImpersonating, originalAdmin, stopImpersonating } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
 
   // Initial Auth Loading Screen
@@ -51,6 +54,34 @@ export function MainAppLayout() {
       <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {/* Impersonation & Workspace Inspection Banner */}
+        {isImpersonating && originalAdmin && currentUser && (
+          <div className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-3 border-b border-rose-500/30 bg-gradient-to-r from-zinc-900 via-rose-950 to-indigo-950 px-4 py-2 text-xs text-white shadow-lg">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-white font-bold animate-pulse shrink-0">
+                <Eye className="h-3 w-3" />
+              </span>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="font-semibold text-rose-300">Admin Inspection Mode:</span>
+                <span>Viewing workspace as</span>
+                <span className="rounded bg-white/10 px-1.5 py-0.5 font-medium text-white">
+                  {currentUser.name} ({currentUser.email})
+                </span>
+                <span className="text-zinc-400">· Role: {currentUser.role}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={stopImpersonating}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 px-3 py-1 font-semibold text-white shadow-md hover:bg-rose-500 transition active:scale-95 text-xs"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                <span>Return to Admin ({originalAdmin.name.split(" ")[0]})</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         <TopBar onMenu={() => setMenuOpen(true)} />
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">

@@ -35,20 +35,12 @@ export async function POST(request: Request) {
         }
 
         const totalUsers = await db.select().from(users);
-        const resolvedRole: "admin" | "employee" | "manager" =
-          role && allowedRoles.includes(role)
-            ? (role as "admin" | "employee" | "manager")
-            : totalUsers.length === 0
-            ? "admin"
-            : "employee";
+        // Only the first user in an empty system is granted admin; all subsequent registrants are employees.
+        // Roles can only be elevated by an existing administrator via the Admin Hub.
+        const resolvedRole: "admin" | "employee" = totalUsers.length === 0 ? "admin" : "employee";
 
         const cleanDesig = String(
-          designation ||
-            (resolvedRole === "admin"
-              ? "System Administrator"
-              : resolvedRole === "manager"
-              ? "Operations Manager"
-              : "Support Specialist")
+          designation || (resolvedRole === "admin" ? "System Administrator" : "Support Specialist")
         ).trim();
 
         const [insertedUser] = await db
@@ -111,18 +103,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "An account with this email address already exists." }, { status: 409 });
     }
 
-    const resolvedRole: "admin" | "employee" | "manager" =
-      role && allowedRoles.includes(role)
-        ? (role as "admin" | "employee" | "manager")
-        : resolveNewUserRole(store);
+    // Only the first user in an empty system is granted admin; all subsequent registrants are employees.
+    const resolvedRole: "admin" | "employee" = resolveNewUserRole(store);
 
     const cleanDesig = String(
-      designation ||
-        (resolvedRole === "admin"
-          ? "System Administrator"
-          : resolvedRole === "manager"
-          ? "Operations Manager"
-          : "Support Specialist")
+      designation || (resolvedRole === "admin" ? "System Administrator" : "Support Specialist")
     ).trim();
 
     const newId = (store.users.length > 0 ? Math.max(...store.users.map((u) => u.id)) : 0) + 1;
