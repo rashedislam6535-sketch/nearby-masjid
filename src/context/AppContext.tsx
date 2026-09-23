@@ -192,9 +192,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         } catch {}
       }
-      const readIds = loadReadIds();
+      const readSet = new Set(loadReadIds().map((x) => String(x)));
       setNotifications(
-        (data.notifications || []).map((n: NotificationItem) => ({ ...n, isRead: readIds.includes(n.id) ? 1 : n.isRead }))
+        (data.notifications || []).map((n: NotificationItem) => ({
+          ...n,
+          isRead: readSet.has(String(n.id)) ? 1 : n.isRead,
+        }))
       );
       setStreakCount(data.streak ?? 0);
     } catch (err) {
@@ -205,6 +208,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (currentUser) {
       refreshData();
+      const interval = setInterval(() => {
+        refreshData();
+      }, 25000);
+      return () => clearInterval(interval);
     }
   }, [refreshData, dataVersion, currentUser?.id]);
 
@@ -374,20 +381,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [originalAdmin, toast]);
 
-  const persistRead = (ids: number[]) => {
+  const persistRead = (ids: (number | string)[]) => {
     try {
-      localStorage.setItem(READ_KEY, JSON.stringify(ids));
+      localStorage.setItem(READ_KEY, JSON.stringify(ids.map((x) => (typeof x === "number" ? x : String(x)))));
     } catch {}
   };
 
-  const markNotificationAsRead = (id: number) => {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: 1 } : n)));
-    persistRead(Array.from(new Set([...loadReadIds(), id])));
+  const markNotificationAsRead = (id: number | string) => {
+    setNotifications((prev) => prev.map((n) => (String(n.id) === String(id) ? { ...n, isRead: 1 } : n)));
+    const existing = loadReadIds();
+    persistRead(Array.from(new Set([...existing, id])));
   };
 
   const markAllRead = () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: 1 })));
-    persistRead(Array.from(new Set([...loadReadIds(), ...notifications.map((n) => n.id)])));
+    const allIds = notifications.map((n) => n.id);
+    persistRead(Array.from(new Set([...loadReadIds(), ...allIds])));
   };
 
   const confirm = useCallback(

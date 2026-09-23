@@ -26,6 +26,8 @@ import {
   Users,
   Eye,
   ArrowLeft,
+  Megaphone,
+  Radio,
 } from "lucide-react";
 import { availabilityMeta } from "@/lib/utils";
 
@@ -371,19 +373,30 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
         <div className="relative" ref={popRef}>
           <button
             onClick={() => setOpen((o) => !o)}
-            className="relative rounded-md p-2 text-zinc-500 hover:bg-zinc-200/60 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+            className="relative rounded-md p-2 text-zinc-500 hover:bg-zinc-200/60 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100 transition"
             aria-label="Notifications"
           >
             <Bell className="h-4 w-4" />
-            {unreadCount > 0 && <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-indigo-500" />}
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-zinc-950 animate-pulse">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
 
           {open && (
-            <div className="absolute right-0 mt-1 w-80 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="absolute right-0 mt-1 w-80 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-lg dark:border-zinc-800 dark:bg-zinc-900 z-50">
               <div className="flex items-center justify-between border-b border-zinc-100 px-3 py-2 dark:border-zinc-800">
-                <span className="text-xs font-medium">Notifications</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-semibold">Notifications</span>
+                  {unreadCount > 0 && (
+                    <span className="rounded-full bg-rose-500/10 text-rose-500 font-bold px-1.5 py-0.2 text-[10px]">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </div>
                 {unreadCount > 0 && (
-                  <button onClick={markAllRead} className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100">
+                  <button onClick={markAllRead} className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 font-medium">
                     Mark all read
                   </button>
                 )}
@@ -392,19 +405,46 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
                 {notifications.length === 0 ? (
                   <p className="px-3 py-6 text-center text-xs text-zinc-500">You&apos;re all caught up.</p>
                 ) : (
-                  notifications.map((n) => (
-                    <button
-                      key={n.id}
-                      onClick={() => markNotificationAsRead(n.id)}
-                      className="flex w-full items-start gap-2.5 border-b border-zinc-100 px-3 py-2.5 text-left last:border-0 hover:bg-zinc-50 dark:border-zinc-800/60 dark:hover:bg-zinc-800/50"
-                    >
-                      <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${n.isRead ? "bg-transparent" : "bg-indigo-500"}`} />
-                      <div className="min-w-0">
-                        <p className="text-[13px] font-medium">{n.title}</p>
-                        <p className="mt-0.5 text-xs leading-relaxed text-zinc-500">{n.message}</p>
-                      </div>
-                    </button>
-                  ))
+                  notifications.map((n) => {
+                    const isBroadcast = n.title.startsWith("[Broadcast]") || n.type === "system" || n.type === "reminder";
+                    return (
+                      <button
+                        key={n.id}
+                        onClick={() => markNotificationAsRead(n.id)}
+                        className={`flex w-full items-start gap-2.5 border-b border-zinc-100 px-3 py-2.5 text-left last:border-0 hover:bg-zinc-50 dark:border-zinc-800/60 dark:hover:bg-zinc-800/50 transition ${
+                          !n.isRead && isBroadcast ? "bg-rose-50/40 dark:bg-rose-950/20" : ""
+                        }`}
+                      >
+                        <div className="shrink-0 mt-0.5">
+                          {isBroadcast ? (
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-rose-500/15 text-rose-500">
+                              <Megaphone className="h-3 w-3" />
+                            </div>
+                          ) : (
+                            <span className={`inline-block mt-1 h-2 w-2 rounded-full ${n.isRead ? "bg-zinc-300 dark:bg-zinc-700" : "bg-indigo-500"}`} />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <p className="text-[13px] font-medium truncate text-zinc-900 dark:text-zinc-100">
+                              {n.title.replace(/^\[Broadcast\]\s*/i, "")}
+                            </p>
+                            {isBroadcast && (
+                              <span className="shrink-0 rounded bg-rose-500/10 px-1 text-[9px] font-mono font-bold text-rose-500">
+                                BROADCAST
+                              </span>
+                            )}
+                          </div>
+                          <p className="mt-0.5 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                            {n.message}
+                          </p>
+                          <span className="mt-1 block text-[10px] text-zinc-400 font-mono">
+                            {n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Today"}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })
                 )}
               </div>
             </div>

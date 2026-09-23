@@ -10,7 +10,24 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton, StatSkeleton, EmptyState } from "@/components/ui/skeleton";
 import { categoryScores, formatLongDate, formatShortDate, formatDate, summarizeMetrics, taskColor, toDateStr, num, METRIC_KEYS, METRIC_LABELS, availabilityMeta, formatDuration, cn } from "@/lib/utils";
 import type { DashboardData, AttendanceRecord } from "@/types";
-import { ArrowUpRight, ArrowDownRight, ChevronRight, ClipboardList, Clock, Coffee, CheckSquare, Gauge, BarChart3, PieChart } from "lucide-react";
+import {
+  ArrowUpRight,
+  ArrowDownRight,
+  ChevronRight,
+  ClipboardList,
+  Clock,
+  Coffee,
+  CheckSquare,
+  Gauge,
+  BarChart3,
+  PieChart,
+  Megaphone,
+  Radio,
+  Bell,
+  Check,
+  Sparkles,
+  AlertCircle,
+} from "lucide-react";
 
 const muted = "text-zinc-500 dark:text-zinc-400";
 
@@ -34,9 +51,18 @@ function Delta({ today, prev, hadPrev, label, suffix = "" }: { today: number; pr
 }
 
 export function DashboardView() {
-  const { currentUser, employee, setActiveTab, dataVersion, notifyDataChanged } = useApp();
+  const {
+    currentUser,
+    employee,
+    setActiveTab,
+    dataVersion,
+    notifyDataChanged,
+    notifications,
+    markNotificationAsRead,
+  } = useApp();
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState("");
+  const [showPastAnnouncements, setShowPastAnnouncements] = useState(false);
 
   const userId = currentUser?.id;
 
@@ -102,6 +128,16 @@ export function DashboardView() {
     { icon: Gauge, label: "Productivity", value: `${today.score}%`, sub: "Average of all categories", bar: today.score },
   ];
 
+  const broadcastNotices = (notifications || []).filter(
+    (n) =>
+      n.title.startsWith("[Broadcast]") ||
+      n.type === "system" ||
+      n.type === "reminder" ||
+      n.type === "achievement"
+  );
+  const unreadBroadcasts = broadcastNotices.filter((n) => n.isRead === 0);
+  const visibleBroadcasts = showPastAnnouncements ? broadcastNotices : unreadBroadcasts;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -129,6 +165,123 @@ export function DashboardView() {
           <Button onClick={() => setActiveTab("daily-update")}>Log activity</Button>
         </div>
       </div>
+
+      {/* Broadcast Notices & Announcements Section */}
+      {broadcastNotices.length > 0 && (
+        <Card
+          className={`overflow-hidden border transition-all ${
+            unreadBroadcasts.length > 0
+              ? "border-rose-500/30 bg-gradient-to-br from-white via-rose-50/30 to-indigo-50/20 dark:from-zinc-900 dark:via-rose-950/20 dark:to-zinc-900 shadow-sm"
+              : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60"
+          }`}
+        >
+          <CardHeader className="p-4 pb-3 flex flex-row items-center justify-between gap-3 border-b border-zinc-100 dark:border-zinc-800/80">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-rose-500 to-indigo-600 text-white shadow-sm">
+                <Megaphone className="h-3.5 w-3.5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                    Company Broadcast Notices
+                  </h3>
+                  {unreadBroadcasts.length > 0 ? (
+                    <Badge variant="outline" className="bg-rose-500/10 text-rose-500 border-rose-500/30 font-bold text-[10px] animate-pulse">
+                      {unreadBroadcasts.length} Unread Notice{unreadBroadcasts.length === 1 ? "" : "s"}
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-zinc-500 text-[10px]">
+                      All Caught Up
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowPastAnnouncements(!showPastAnnouncements)}
+                className="text-[11px] font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-300 transition"
+              >
+                {showPastAnnouncements ? "Show Unread Only" : `View All History (${broadcastNotices.length})`}
+              </button>
+            </div>
+          </CardHeader>
+
+          <CardContent className="p-4 pt-3 space-y-3">
+            {visibleBroadcasts.length === 0 ? (
+              <div className="py-4 text-center text-xs text-zinc-500">
+                <span>No unread broadcast notices. All previous announcements have been acknowledged.</span>
+                <button
+                  onClick={() => setShowPastAnnouncements(true)}
+                  className="ml-2 font-semibold text-indigo-600 dark:text-indigo-400 underline underline-offset-2"
+                >
+                  View past announcements
+                </button>
+              </div>
+            ) : (
+              visibleBroadcasts.slice(0, 4).map((b) => {
+                const isUrgent = b.type === "reminder";
+                const isMilestone = b.type === "achievement";
+
+                return (
+                  <div
+                    key={b.id}
+                    className={`rounded-xl border p-3.5 transition ${
+                      !b.isRead
+                        ? "border-rose-500/30 bg-rose-500/5 dark:bg-rose-500/10"
+                        : "border-zinc-200 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-900/40"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={`rounded px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider ${
+                            isUrgent
+                              ? "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                              : isMilestone
+                              ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                              : "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30"
+                          }`}
+                        >
+                          {b.type || "system"}
+                        </span>
+                        <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                          {b.title.replace(/^\[Broadcast\]\s*/i, "")}
+                        </h4>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[11px] text-zinc-400 font-mono">
+                          {b.createdAt ? new Date(b.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Today"}
+                        </span>
+                        {!b.isRead ? (
+                          <button
+                            onClick={() => markNotificationAsRead(b.id)}
+                            className="inline-flex items-center gap-1 rounded-md bg-rose-600 hover:bg-rose-500 px-2.5 py-1 text-[11px] font-semibold text-white shadow-sm transition active:scale-95"
+                          >
+                            <Check className="h-3 w-3" />
+                            <span>Acknowledge</span>
+                          </button>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded bg-zinc-200/60 dark:bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-500 dark:text-zinc-400">
+                            <Check className="h-2.5 w-2.5 text-emerald-500" />
+                            <span>Acknowledged</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <p className="mt-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-300">
+                      {b.message}
+                    </p>
+                  </div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Today's summary */}
       <section>

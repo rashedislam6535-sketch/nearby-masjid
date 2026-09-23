@@ -16,11 +16,34 @@ import { LogActivityPage } from "@/components/ActivityLogForm";
 import { AdminHubView } from "@/components/AdminHubView";
 import { LoginView } from "@/components/auth/LoginView";
 import { Toaster, ConfirmDialog } from "@/components/Feedback";
-import { Eye, ArrowLeft, Shield } from "lucide-react";
+import { Eye, ArrowLeft, Shield, Megaphone, Radio, BellRing, Check, ChevronRight } from "lucide-react";
 
 export function MainAppLayout() {
-  const { activeTab, currentUser, isAuthenticated, authLoading, isImpersonating, originalAdmin, stopImpersonating } = useApp();
+  const {
+    activeTab,
+    currentUser,
+    isAuthenticated,
+    authLoading,
+    isImpersonating,
+    originalAdmin,
+    stopImpersonating,
+    notifications,
+    markNotificationAsRead,
+  } = useApp();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [activeBroadcastIndex, setActiveBroadcastIndex] = useState(0);
+
+  // Filter unread broadcast notifications
+  const unreadBroadcasts = notifications.filter(
+    (n) =>
+      n.isRead === 0 &&
+      (n.title.startsWith("[Broadcast]") ||
+        n.type === "system" ||
+        n.type === "reminder" ||
+        n.type === "achievement")
+  );
+
+  const currentBroadcast = unreadBroadcasts[activeBroadcastIndex] || unreadBroadcasts[0];
 
   // Initial Auth Loading Screen
   if (authLoading) {
@@ -83,6 +106,64 @@ export function MainAppLayout() {
         )}
 
         <TopBar onMenu={() => setMenuOpen(true)} />
+
+        {/* Live Broadcast Notice Alert Banner */}
+        {unreadBroadcasts.length > 0 && currentBroadcast && (
+          <div className="relative border-b border-rose-500/30 bg-gradient-to-r from-zinc-900 via-rose-950/60 to-zinc-900 px-4 py-3 text-xs shadow-md animate-fadeIn">
+            <div className="mx-auto max-w-6xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex items-start sm:items-center gap-3 min-w-0">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-rose-500 to-indigo-600 text-white shadow-md ring-2 ring-rose-500/20">
+                  <Megaphone className="h-4 w-4 animate-bounce" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-rose-300 border border-rose-500/30">
+                      <Radio className="h-2.5 w-2.5 animate-pulse text-rose-400" />
+                      BROADCAST ANNOUNCEMENT
+                    </span>
+                    {unreadBroadcasts.length > 1 && (
+                      <span className="text-[10px] text-zinc-400 font-mono">
+                        ({activeBroadcastIndex + 1} of {unreadBroadcasts.length})
+                      </span>
+                    )}
+                    <span className="font-semibold text-white truncate text-[13px]">
+                      {currentBroadcast.title.replace(/^\[Broadcast\]\s*/i, "")}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-zinc-300 text-xs leading-relaxed max-w-3xl">
+                    {currentBroadcast.message}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                {unreadBroadcasts.length > 1 && (
+                  <button
+                    onClick={() =>
+                      setActiveBroadcastIndex((prev) => (prev + 1) % unreadBroadcasts.length)
+                    }
+                    className="rounded-lg border border-zinc-700 bg-zinc-800/80 px-2.5 py-1.5 text-[11px] font-medium text-zinc-300 hover:bg-zinc-700 transition"
+                  >
+                    Next Notice ({((activeBroadcastIndex + 1) % unreadBroadcasts.length) + 1}/{unreadBroadcasts.length})
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    markNotificationAsRead(currentBroadcast.id);
+                    if (activeBroadcastIndex >= unreadBroadcasts.length - 1) {
+                      setActiveBroadcastIndex(0);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-gradient-to-r from-rose-600 to-indigo-600 px-3 py-1.5 text-xs font-semibold text-white hover:from-rose-500 hover:to-indigo-500 transition shadow-sm active:scale-95"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                  <span>Acknowledge Notice</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
           <div key={activeTab} className="fade-in">

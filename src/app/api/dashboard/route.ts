@@ -103,7 +103,8 @@ export async function GET(request: Request) {
       break;
     }
 
-    let userNotifications: NotificationItem[] = [];
+    const userNotificationsMap = new Map<string, NotificationItem>();
+
     if (process.env.DATABASE_URL) {
       try {
         const notifs = await db
@@ -111,15 +112,37 @@ export async function GET(request: Request) {
           .from(notifications)
           .where(eq(notifications.userId, user.id))
           .orderBy(desc(notifications.createdAt))
-          .limit(15);
-        userNotifications = notifs.map((n) => ({ ...n, createdAt: new Date(n.createdAt).toISOString() }));
-      } catch (e) {}
+          .limit(20);
+
+        for (const n of notifs) {
+          const item: NotificationItem = {
+            id: n.id,
+            userId: n.userId,
+            title: n.title,
+            message: n.message,
+            type: n.type,
+            isRead: n.isRead,
+            createdAt: new Date(n.createdAt).toISOString(),
+          };
+          userNotificationsMap.set(`${n.title}-${n.message}`, item);
+        }
+      } catch (e) {
+        console.warn("DB notifications read bypassed:", e);
+      }
     }
 
-    if (userNotifications.length === 0) {
-      const store = getMemoryStore();
-      userNotifications = store.notifications.filter((n) => n.userId === user.id || n.userId === 1);
+    const store = getMemoryStore();
+    const memNotifs = store.notifications.filter((n) => n.userId === user.id || n.userId === 0);
+    for (const n of memNotifs) {
+      const key = `${n.title}-${n.message}`;
+      if (!userNotificationsMap.has(key)) {
+        userNotificationsMap.set(key, n);
+      }
     }
+
+    const userNotifications: NotificationItem[] = Array.from(userNotificationsMap.values())
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 20);
 
     const todayAttendance = attendanceList.find((a) => a.date === todayStr) ?? null;
 

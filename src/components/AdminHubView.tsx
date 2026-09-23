@@ -33,13 +33,15 @@ import {
   MapPin,
   Laptop,
   CheckSquare,
+  Bell,
+  Megaphone,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export function AdminHubView() {
-  const { currentUser, switchUser, setActiveTab, toast, confirm } = useApp();
+  const { currentUser, switchUser, setActiveTab, toast, confirm, notifyDataChanged } = useApp();
   const [employeesData, setEmployeesData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -52,6 +54,7 @@ export function AdminHubView() {
   const [broadcastDept, setBroadcastDept] = useState("All");
   const [broadcastType, setBroadcastType] = useState("system");
   const [broadcastSending, setBroadcastSending] = useState(false);
+  const [recentBroadcasts, setRecentBroadcasts] = useState<any[]>([]);
 
   // Edit User Modal
   const [editingUser, setEditingUser] = useState<any | null>(null);
@@ -74,13 +77,22 @@ export function AdminHubView() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/employees");
-      if (res.ok) {
-        const data = await res.json();
-        setEmployeesData(data.employees || []);
+      const [empRes, bcastRes] = await Promise.all([
+        fetch("/api/employees"),
+        fetch("/api/admin/broadcast"),
+      ]);
+
+      if (empRes.ok) {
+        const empJson = await empRes.json();
+        setEmployeesData(empJson.employees || []);
+      }
+
+      if (bcastRes.ok) {
+        const bcastJson = await bcastRes.json();
+        setRecentBroadcasts(bcastJson.broadcasts || []);
       }
     } catch (e: any) {
-      toast({ title: "Failed to load team data", description: e.message, variant: "error" });
+      toast({ title: "Failed to load telemetry", description: e.message, variant: "error" });
     } finally {
       setLoading(false);
     }
@@ -135,13 +147,15 @@ export function AdminHubView() {
 
       toast({
         title: "Announcement Broadcasted!",
-        description: data.message,
+        description: data.message || `Broadcast sent to ${data.deliveredCount} member(s).`,
         variant: "success",
       });
 
       setShowBroadcast(false);
       setBroadcastTitle("");
       setBroadcastMessage("");
+      notifyDataChanged();
+      loadData();
     } catch (err: any) {
       toast({ title: "Broadcast Failed", description: err.message, variant: "error" });
     } finally {
@@ -301,10 +315,10 @@ export function AdminHubView() {
                 Live Telemetry Active
               </span>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+            <h1 className="text-2xl font-bold tracking-tight text-white">
               Enterprise Operations & Staff Command
             </h1>
-            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400 max-w-2xl">
+            <p className="mt-1 text-sm text-zinc-300 max-w-2xl">
               Real-time employee check-in & check-out tracking, live daily progress monitoring, credential administration, and role governance.
             </p>
           </div>
@@ -466,7 +480,6 @@ export function AdminHubView() {
                   const isCurrent = currentUser?.id === emp.id;
                   const isAdm = emp.role === "admin" || emp.role === "manager";
                   const attStatus = emp.stats?.attendanceStatus;
-                  const hasActivities = emp.stats?.todayTasksCount > 0 || (emp.stats?.todayActivities && emp.stats.todayActivities.length > 0);
 
                   return (
                     <tr
@@ -717,6 +730,50 @@ export function AdminHubView() {
         </div>
       </Card>
 
+      {/* Broadcast Announcements History Card */}
+      {recentBroadcasts.length > 0 && (
+        <Card className="p-5 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/90 shadow-sm">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center gap-2">
+              <Megaphone className="h-4 w-4 text-rose-500" />
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-white">Active System Broadcasts</h3>
+              <Badge variant="outline" className="text-[10px] font-mono">
+                {recentBroadcasts.length} Sent
+              </Badge>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowBroadcast(true)}
+              className="text-xs h-7 gap-1 text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900"
+            >
+              <Plus className="h-3 w-3" />
+              <span>New Announcement</span>
+            </Button>
+          </div>
+
+          <div className="mt-3 divide-y divide-zinc-100 dark:divide-zinc-800 text-xs">
+            {recentBroadcasts.slice(0, 5).map((b) => (
+              <div key={b.id} className="py-2.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-zinc-800 dark:text-zinc-200">{b.title}</span>
+                    <span className="rounded bg-rose-500/10 px-1.5 py-0.2 text-[9px] font-mono text-rose-500 capitalize">
+                      {b.type || "system"}
+                    </span>
+                  </div>
+                  <p className="text-zinc-500 dark:text-zinc-400 text-[11px] mt-0.5">{b.message}</p>
+                </div>
+                <div className="text-right shrink-0 text-[11px] text-zinc-400 font-mono">
+                  <span>{b.deliveredCount ? `Sent to ${b.deliveredCount} user(s)` : "Broadcast active"}</span>
+                  <span className="ml-2">· {new Date(b.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       {/* Broadcast Announcement Modal */}
       {showBroadcast && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
@@ -728,7 +785,7 @@ export function AdminHubView() {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-white">Broadcast System Announcement</h3>
-                  <p className="text-xs text-zinc-400">Push notification to team notification feed</p>
+                  <p className="text-xs text-zinc-400">Push live notification to team members</p>
                 </div>
               </div>
               <button
@@ -806,7 +863,7 @@ export function AdminHubView() {
                 <button
                   type="submit"
                   disabled={broadcastSending}
-                  className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-500"
+                  className="rounded-lg bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-500 disabled:opacity-50"
                 >
                   {broadcastSending ? "Broadcasting..." : "Send Announcement"}
                 </button>
