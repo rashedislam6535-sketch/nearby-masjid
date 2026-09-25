@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Compass, Map, Shield, Landmark } from 'lucide-react';
+import { Compass, Map, PlusCircle, Landmark } from 'lucide-react';
 
 interface HeaderNavProps {
   activeTab: 'list' | 'map' | 'admin';
@@ -74,9 +74,10 @@ export function HeaderNav({ activeTab, setActiveTab, lang, setLang, expiredCount
                   ? 'bg-amber-500 text-emerald-950 font-bold shadow-sm'
                   : 'text-emerald-200 hover:text-white'
               }`}
+              title={lang === 'bn' ? 'নতুন মসজিদ যোগ করুন বা সময়সূচি হালনাগাদ করুন' : 'Add mosque or update prayer times'}
             >
-              <Shield className="w-3.5 h-3.5" />
-              <span>{lang === 'bn' ? 'অ্যাডমিন' : 'Admin'}</span>
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span>{lang === 'bn' ? 'যোগ ও আপডেট' : 'Contribute'}</span>
               {expiredCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] flex items-center justify-center font-bold animate-pulse">
                   {expiredCount}
