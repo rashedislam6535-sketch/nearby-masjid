@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, MapPin, Navigation, Phone, Clock, AlertTriangle, CheckCircle, Calendar, Share2, ZoomIn } from 'lucide-react';
+import { X, MapPin, Navigation, Phone, Clock, AlertTriangle, CheckCircle, Calendar, Share2, ZoomIn, Trash2 } from 'lucide-react';
 import { MosqueData } from '@/types/masjid';
 import { checkTimetableValidity, calculatePrayerCountdown } from '@/lib/prayerTracker';
 
@@ -9,10 +9,11 @@ interface MosqueDetailsModalProps {
   mosque: MosqueData | null;
   onClose: () => void;
   onOpenAdminUpdate?: (mosque: MosqueData) => void;
+  onDeleteMosque?: (id: number) => void;
   lang: 'en' | 'bn';
 }
 
-export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, lang }: MosqueDetailsModalProps) {
+export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDeleteMosque, lang }: MosqueDetailsModalProps) {
   const [imageZoomed, setImageZoomed] = useState<boolean>(false);
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
 
@@ -287,7 +288,7 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, lang }:
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold transition-colors"
@@ -295,17 +296,40 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, lang }:
             {lang === 'bn' ? 'বন্ধ করুন' : 'Close'}
           </button>
 
-          {onOpenAdminUpdate && (
-            <button
-              onClick={() => {
-                onClose();
-                onOpenAdminUpdate(mosque);
-              }}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow-sm"
-            >
-              <span>{lang === 'bn' ? 'সময়সূচি হালনাগাদ (Admin)' : 'Update Timetable (Admin)'}</span>
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {onDeleteMosque && (
+              <button
+                type="button"
+                onClick={() => {
+                  const confirmed = window.confirm(
+                    lang === 'bn'
+                      ? `আপনি কি নিশ্চিতভাবে "${mosque.mosque_name_bn || mosque.mosque_name_en}" মসজিদটি ডাটাবেজ থেকে মুছে ফেলতে চান?`
+                      : `Are you sure you want to permanently delete "${mosque.mosque_name_en}" from database?`
+                  );
+                  if (confirmed) {
+                    onDeleteMosque(mosque.id);
+                  }
+                }}
+                className="px-3.5 py-2 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                title={lang === 'bn' ? 'মসজিদটি ডাটাবেজ থেকে মুছুন' : 'Remove mosque from database'}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{lang === 'bn' ? 'মসজিদ মুছুন (Remove)' : 'Remove Mosque'}</span>
+              </button>
+            )}
+
+            {onOpenAdminUpdate && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenAdminUpdate(mosque);
+                }}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+              >
+                <span>{lang === 'bn' ? 'সময়সূচি হালনাগাদ (Admin)' : 'Update Timetable (Admin)'}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -448,6 +448,20 @@ export default function NearbyMasjidApp() {
             setSelectedMosqueForAdmin(mosque);
             setActiveTab('admin');
           }}
+          onDeleteMosque={async (id) => {
+            try {
+              const res = await fetch(`/api/mosques/${id}`, { method: 'DELETE' });
+              const data = await res.json();
+              if (data.success) {
+                setSelectedMosqueForDetails(null);
+                fetchMosques();
+              } else {
+                alert(data.error || 'Failed to remove mosque');
+              }
+            } catch (err) {
+              console.error('Delete error:', err);
+            }
+          }}
           lang={lang}
         />
       )}

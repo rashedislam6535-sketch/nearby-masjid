@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, Plus, Upload, CheckCircle2, AlertTriangle, RefreshCw,
   Clock, Eye, Edit3, Trash2, Camera, Sparkles, MapPin, Check,
-  RotateCcw, Save, Image as ImageIcon, Link2
+  RotateCcw, Save, Image as ImageIcon, Link2, Search
 } from 'lucide-react';
 import { MosqueData } from '@/types/masjid';
 import { BANGLADESH_DIVISIONS } from '@/lib/geoUtils';
@@ -117,6 +117,7 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
   const [coverPhotoSource, setCoverPhotoSource] = useState<'preset' | 'device' | 'url'>('preset');
   const [showUrlInput, setShowUrlInput] = useState<boolean>(false);
   const [isCompressingImage, setIsCompressingImage] = useState<boolean>(false);
+  const [directorySearch, setDirectorySearch] = useState<string>('');
 
   // Handle Cover Photo Upload from Device / Camera
   const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -399,17 +400,28 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
     }
   };
 
-  // Delete Mosque
-  const handleDeleteMosque = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this mosque from database?')) return;
+  // Delete Mosque permanently
+  const handleDeleteMosque = async (id: number, name?: string) => {
+    const mosqueName = name || (lang === 'bn' ? 'এই মসজিদটি' : 'this mosque');
+    const confirmed = window.confirm(
+      lang === 'bn'
+        ? `আপনি কি নিশ্চিতভাবে "${mosqueName}" ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলতে চান? এটি আর ফিরিয়ে আনা যাবে না।`
+        : `Are you sure you want to permanently delete "${mosqueName}" from the database? This cannot be undone.`
+    );
+    if (!confirmed) return;
+
     try {
       const res = await fetch(`/api/mosques/${id}`, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
+        setSaveSuccess(lang === 'bn' ? `"${mosqueName}" সফলভাবে ডাটাবেজ থেকে মুছে ফেলা হয়েছে` : `"${mosqueName}" removed successfully from database`);
         onRefresh();
+      } else {
+        setSaveError(data.error || 'Failed to delete mosque');
       }
     } catch (err) {
       console.error(err);
+      setSaveError((err as Error).message);
     }
   };
 
@@ -426,14 +438,14 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-lg font-bold font-serif">
-                {lang === 'bn' ? 'মসজিদ প্রশাসন ও সময়সূচি নিয়ন্ত্রণ' : 'Mosque Admin Management'}
+                {lang === 'bn' ? 'মসজিদ প্রশাসন ও নিয়ন্ত্রণ' : 'Mosque Admin Management'}
               </h2>
               <span className="text-[10px] bg-emerald-800 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-400/30">
                 POSTGRESQL LIVE
               </span>
             </div>
             <p className="text-xs text-emerald-300">
-              {lang === 'bn' ? 'এআই ওসিআর দিয়ে সময়সূচি রিড করুন এবং যাচাই করে প্রকাশ করুন' : 'AI OCR Timetable Verification & Mosque Operations'}
+              {lang === 'bn' ? 'মসজিদ যোগ করুন, মুছে ফেলুন এবং সময়সূচি হালনাগাদ করুন' : 'Add mosques, remove mosques, and verify prayer timetables'}
             </p>
           </div>
         </div>
@@ -470,8 +482,8 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
               : 'text-slate-700 hover:text-slate-900'
           }`}
         >
-          <Plus className="w-3.5 h-3.5" />
-          <span>{lang === 'bn' ? 'নতুন মসজিদ যুক্ত করুন' : 'Add Mosque'}</span>
+          <Plus className="w-3.5 h-3.5 text-emerald-300" />
+          <span>{lang === 'bn' ? 'নতুন মসজিদ যোগ করুন' : 'Add Mosque'}</span>
         </button>
 
         <button
@@ -482,8 +494,8 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
               : 'text-slate-700 hover:text-slate-900'
           }`}
         >
-          <Eye className="w-3.5 h-3.5" />
-          <span>{lang === 'bn' ? 'মসজিদ তালিকা' : 'Directory'} ({mosques.length})</span>
+          <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+          <span>{lang === 'bn' ? 'মসজিদ মুছুন ও তালিকা' : 'Manage & Remove Mosques'} ({mosques.length})</span>
         </button>
       </div>
 
@@ -742,6 +754,17 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
                 <p className="text-[11px] text-slate-500">
                   {lang === 'bn' ? 'তথ্য পূরণ করুন, রিফ্রেশ করলেও ড্রাফট মুছে যাবে না' : 'Draft auto-saves continuously and persists across page refreshes'}
                 </p>
+                <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+                  <span>{lang === 'bn' ? 'কোনো মসজিদ মুছে ফেলতে চান?' : 'Want to remove an existing mosque?'}</span>
+                  <button
+                    type="button"
+                    onClick={() => switchTab('list')}
+                    className="text-rose-700 hover:text-rose-800 font-bold underline flex items-center gap-0.5 ml-1"
+                  >
+                    <Trash2 className="w-3 h-3 text-rose-600" />
+                    <span>{lang === 'bn' ? 'এখানে ক্লিক করে মুছুন' : 'Click here to Remove Mosques'}</span>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -985,29 +1008,57 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
 
             {/* Live Cover Photo Card Preview */}
             <div className="relative w-full h-44 rounded-2xl overflow-hidden border border-slate-300 bg-slate-900 shadow-inner group">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={addForm.image}
-                alt="Cover Preview"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              {addForm.image ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddForm((prev) => ({ ...prev, image: '' }));
+                      setCoverPhotoSource('preset');
+                    }}
+                    className="absolute top-3 right-3 z-10 px-2.5 py-1.5 bg-rose-600/90 hover:bg-rose-700 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-md transition-colors backdrop-blur-sm"
+                    title={lang === 'bn' ? 'কভার ছবি মুছুন' : 'Remove cover photo'}
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{lang === 'bn' ? 'ছবি মুছুন (Remove)' : 'Remove Photo'}</span>
+                  </button>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={addForm.image}
+                    alt="Cover Preview"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                </>
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-800 p-4 text-center">
+                  <ImageIcon className="w-8 h-8 mb-1.5 text-slate-500" />
+                  <span className="text-xs font-bold text-slate-200">
+                    {lang === 'bn' ? 'কোনো কভার ছবি নির্বাচিত নেই' : 'No Cover Photo Selected'}
+                  </span>
+                  <span className="text-[11px] text-slate-400 mt-0.5">
+                    {lang === 'bn' ? 'নিচ থেকে ক্যামেরা/ডিভাইস ছবি আপলোড করুন অথবা প্রিসেট বেছে নিন' : 'Upload from device/camera or choose an architectural preset below'}
+                  </span>
+                </div>
+              )}
               
               {/* Overlay preview labels */}
-              <div className="absolute bottom-3 left-3 right-3 text-white">
-                <div className="text-[10px] bg-emerald-700 text-amber-300 font-bold px-2 py-0.5 rounded-full inline-block mb-1 shadow">
-                  {lang === 'bn' ? 'লাইভ প্রিভিউ' : 'Live Preview in App'}
+              {addForm.image && (
+                <div className="absolute bottom-3 left-3 right-3 text-white">
+                  <div className="text-[10px] bg-emerald-700 text-amber-300 font-bold px-2 py-0.5 rounded-full inline-block mb-1 shadow">
+                    {lang === 'bn' ? 'লাইভ প্রিভিউ' : 'Live Preview in App'}
+                  </div>
+                  <h4 className="text-sm font-bold font-serif leading-tight truncate">
+                    {addForm.mosque_name_bn || (lang === 'bn' ? 'মসজিদের নাম এখানে প্রদর্শিত হবে' : 'Mosque Name Preview')}
+                  </h4>
+                  <p className="text-[11px] text-slate-300 truncate">
+                    {addForm.mosque_name_en || (lang === 'bn' ? 'ইংরেজি নাম' : 'English Name')} • {addForm.address || (lang === 'bn' ? 'ঠিকানা' : 'Address')}
+                  </p>
                 </div>
-                <h4 className="text-sm font-bold font-serif leading-tight truncate">
-                  {addForm.mosque_name_bn || (lang === 'bn' ? 'মসজিদের নাম এখানে প্রদর্শিত হবে' : 'Mosque Name Preview')}
-                </h4>
-                <p className="text-[11px] text-slate-300 truncate">
-                  {addForm.mosque_name_en || (lang === 'bn' ? 'ইংরেজি নাম' : 'English Name')} • {addForm.address || (lang === 'bn' ? 'ঠিকানা' : 'Address')}
-                </p>
-              </div>
+              )}
 
               {isCompressingImage && (
-                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold gap-2">
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold gap-2 z-20">
                   <Camera className="w-5 h-5 animate-pulse text-amber-400" />
                   <span>{lang === 'bn' ? 'ছবি প্রসেস হচ্ছে...' : 'Optimizing photo...'}</span>
                 </div>
@@ -1043,6 +1094,21 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
                 <Link2 className="w-3.5 h-3.5 text-slate-500" />
                 <span>{lang === 'bn' ? 'ওয়েব লিঙ্ক (URL)' : 'Web URL'}</span>
               </button>
+
+              {addForm.image && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAddForm((prev) => ({ ...prev, image: '' }));
+                    setCoverPhotoSource('preset');
+                  }}
+                  className="py-2.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors whitespace-nowrap"
+                  title="Remove selected cover photo"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{lang === 'bn' ? 'ছবি মুছুন' : 'Remove Photo'}</span>
+                </button>
+              )}
             </div>
 
             {/* Optional URL Input */}
@@ -1124,69 +1190,105 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
       )}
 
       {/* ======================================================== */}
-      {/* TAB 3: MOSQUE DIRECTORY & VALIDITY MONITOR */}
+      {/* TAB 3: MOSQUE DIRECTORY & REMOVE OPERATIONS */}
       {/* ======================================================== */}
       {activeTab === 'list' && (
         <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-sm text-slate-900 uppercase tracking-wide">
-              {lang === 'bn' ? 'সকল মসজিদের ডাটাবেজ তালিকা' : 'Registered Mosques & Timetable Status'}
-            </h3>
-            <span className="text-xs text-slate-500 font-medium">
-              Total {mosques.length} Mosques
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+            <div>
+              <h3 className="font-bold text-sm text-slate-900 uppercase tracking-wide flex items-center gap-2">
+                <Trash2 className="w-4 h-4 text-rose-600" />
+                <span>{lang === 'bn' ? 'মসজিদ তালিকা ও মুছে ফেলার অপশন' : 'Mosque Directory & Remove Operations'}</span>
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                {lang === 'bn' 
+                  ? 'যেকোনো মসজিদ ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলতে লাল "মুছে ফেলুন" বাটনে ক্লিক করুন।' 
+                  : 'Click the red "Remove Mosque" button to permanently delete any mosque from the database.'}
+              </p>
+            </div>
+            <span className="text-xs bg-slate-100 text-slate-700 px-3 py-1 rounded-full font-bold border border-slate-200">
+              {lang === 'bn' ? `মোট ${mosques.length} টি মসজিদ` : `Total ${mosques.length} Mosques`}
             </span>
           </div>
 
+          {/* Search box to quickly find mosque to delete */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={directorySearch}
+              onChange={(e) => setDirectorySearch(e.target.value)}
+              placeholder={lang === 'bn' ? 'নাম বা এলাকা দিয়ে মসজিদ খুঁজুন...' : 'Search mosque by name or address to remove...'}
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-rose-500"
+            />
+          </div>
+
+          {/* List of Mosques */}
           <div className="divide-y divide-slate-100">
-            {mosques.map((m) => {
-              const val = checkTimetableValidity(m.prayer?.updated_date, m.prayer?.next_update_date);
-              return (
-                <div key={m.id} className="py-3 flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={m.image}
-                      alt={m.mosque_name_en}
-                      className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0"
-                    />
-                    <div>
-                      <h4 className="font-bold text-xs text-slate-900 leading-tight">
-                        {m.mosque_name_bn}
-                      </h4>
-                      <p className="text-[11px] text-slate-500">{m.mosque_name_en}</p>
-                      <div className="text-[10px] text-slate-400 mt-0.5">{m.address}</div>
+            {mosques
+              .filter((m) => {
+                if (!directorySearch.trim()) return true;
+                const q = directorySearch.toLowerCase();
+                return (
+                  m.mosque_name_bn?.toLowerCase().includes(q) ||
+                  m.mosque_name_en?.toLowerCase().includes(q) ||
+                  m.address?.toLowerCase().includes(q) ||
+                  m.district?.toLowerCase().includes(q)
+                );
+              })
+              .map((m) => {
+                const val = checkTimetableValidity(m.prayer?.updated_date, m.prayer?.next_update_date);
+                return (
+                  <div key={m.id} className="py-3 flex flex-wrap items-center justify-between gap-3 hover:bg-slate-50/80 px-2 rounded-xl transition-colors">
+                    <div className="flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={m.image}
+                        alt={m.mosque_name_en}
+                        className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0"
+                      />
+                      <div>
+                        <h4 className="font-bold text-xs text-slate-900 leading-tight">
+                          {m.mosque_name_bn}
+                        </h4>
+                        <p className="text-[11px] text-slate-500">{m.mosque_name_en}</p>
+                        <div className="text-[10px] text-slate-400 mt-0.5">{m.address}</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
+                        val.isExpired ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'
+                      }`}>
+                        {val.isExpired ? '⚠️ Expired' : `${val.daysRemaining}d valid`}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedMosqueId(m.id);
+                          switchTab('ocr');
+                        }}
+                        className="px-2.5 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 border border-amber-300/40 rounded-xl text-xs font-bold flex items-center gap-1 transition-colors"
+                        title="Update Timetable"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">{lang === 'bn' ? 'সময়সূচি' : 'Timetable'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMosque(m.id, m.mosque_name_bn || m.mosque_name_en)}
+                        className="px-3 py-1.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm group whitespace-nowrap"
+                        title={lang === 'bn' ? 'মসজিদটি ডাটাবেজ থেকে স্থায়ীভাবে মুছে ফেলুন' : 'Permanently remove mosque from database'}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-rose-500 group-hover:text-white transition-colors" />
+                        <span>{lang === 'bn' ? 'মুছে ফেলুন (Remove)' : 'Remove Mosque'}</span>
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
-                      val.isExpired ? 'bg-rose-100 text-rose-800' : 'bg-emerald-100 text-emerald-800'
-                    }`}>
-                      {val.isExpired ? '⚠️ Expired' : `${val.daysRemaining}d valid`}
-                    </span>
-
-                    <button
-                      onClick={() => {
-                        setSelectedMosqueId(m.id);
-                        setActiveTab('ocr');
-                      }}
-                      className="p-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-900 rounded-lg text-xs font-bold transition-colors"
-                      title="Update Timetable"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
-
-                    <button
-                      onClick={() => handleDeleteMosque(m.id)}
-                      className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg text-xs transition-colors"
-                      title="Delete Mosque"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
       )}
