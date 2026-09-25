@@ -189,50 +189,50 @@ const charts = [
 ];
 
 function generateSvg(item) {
-  const rowHeight = 44;
-  const startY = 160;
+  const rowHeight = 42;
+  const startY = 192;
   
   const rows = item.times.map((t, i) => {
     const y = startY + i * rowHeight;
     const isEven = i % 2 === 0;
-    const bgFill = isEven ? '#064e3b15' : '#ffffff';
+    const bgFill = isEven ? '#064e3b12' : '#ffffff';
     return `
-      <rect x="25" y="${y}" width="550" height="38" rx="6" fill="${bgFill}" />
-      <text x="45" y="${y + 24}" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#064e3b">${t.waqtBn} / ${t.waqtEn}</text>
-      <text x="260" y="${y + 24}" font-family="Arial, sans-serif" font-size="14" fill="#047857">${t.azan || '-'}</text>
-      <text x="420" y="${y + 24}" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">${t.jamat}</text>
+      <rect x="25" y="${y}" width="550" height="36" rx="6" fill="${bgFill}" />
+      <text x="45" y="${y + 23}" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="bold" fill="#064e3b">${t.waqtBn} / ${t.waqtEn}</text>
+      <text x="260" y="${y + 23}" font-family="'Segoe UI', Arial, sans-serif" font-size="14" font-weight="600" fill="#047857">${t.azan || '-'}</text>
+      <text x="420" y="${y + 23}" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">${t.jamat}</text>
     `;
   }).join('');
 
   return `<?xml version="1.0" encoding="UTF-8"?>
-<svg width="600" height="520" viewBox="0 0 600 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="600" height="540" viewBox="0 0 600 540" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Background with Islamic aesthetic styling -->
-  <rect width="600" height="520" rx="16" fill="#fdfbf7" stroke="#047857" stroke-width="4"/>
-  <rect x="12" y="12" width="576" height="496" rx="12" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <rect width="600" height="540" rx="16" fill="#fdfbf7" stroke="#047857" stroke-width="4"/>
+  <rect x="12" y="12" width="576" height="516" rx="12" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6 3"/>
 
   <!-- Header Section -->
-  <rect x="25" y="24" width="550" height="78" rx="10" fill="#064e3b"/>
-  <text x="300" y="52" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="18" font-weight="bold" fill="#fef3c7">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</text>
-  <text x="300" y="78" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffffff">${item.nameBn}</text>
-  <text x="300" y="94" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#cbd5e1">${item.nameEn}</text>
+  <rect x="25" y="22" width="550" height="76" rx="10" fill="#064e3b"/>
+  <text x="300" y="48" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="17" font-weight="bold" fill="#fef3c7">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</text>
+  <text x="300" y="73" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffffff">${item.nameBn}</text>
+  <text x="300" y="89" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#cbd5e1">${item.nameEn}</text>
 
   <!-- Timetable Meta Info -->
-  <rect x="25" y="112" width="550" height="34" rx="6" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
-  <text x="45" y="134" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#92400e">নামাজের সময়সূচি (Prayer Timetable)</text>
-  <text x="555" y="134" text-anchor="end" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#b45309">মেয়াদ: ${item.dateRange}</text>
+  <rect x="25" y="108" width="550" height="34" rx="6" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
+  <text x="45" y="130" font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="bold" fill="#92400e">নামাজের সময়সূচি (Prayer Timetable)</text>
+  <text x="555" y="130" text-anchor="end" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="bold" fill="#b45309">মেয়াদ: ${item.dateRange}</text>
 
-  <!-- Table Column Headers -->
-  <rect x="25" y="152" width="550" height="4" fill="#047857"/>
-  <text x="45" y="176" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4b5563">ওয়াক্ত (WAQT)</text>
-  <text x="260" y="176" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4b5563">আযান (AZAN)</text>
-  <text x="420" y="176" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#064e3b">জামাত (JAMAT)</text>
+  <!-- Table Column Headers Bar (Clearly separated with distinct background) -->
+  <rect x="25" y="150" width="550" height="34" rx="6" fill="#064e3b" stroke="#047857" stroke-width="1"/>
+  <text x="45" y="172" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="bold" fill="#fef3c7">ওয়াক্ত (WAQT)</text>
+  <text x="260" y="172" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="bold" fill="#fef3c7">আযান (AZAN)</text>
+  <text x="420" y="172" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="bold" fill="#fbbf24">জামাত (JAMAT)</text>
 
   <!-- Rows -->
   ${rows}
 
   <!-- Footer Banner -->
-  <line x1="25" y1="465" x2="575" y2="465" stroke="#d1d5db" stroke-width="1"/>
-  <text x="300" y="488" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#064e3b" font-weight="bold">Nearby Masjid Platform • ডিজিটাল মসজিদ সময়সূচি ব্যবস্থাপনা</text>
+  <line x1="25" y1="480" x2="575" y2="480" stroke="#d1d5db" stroke-width="1"/>
+  <text x="300" y="504" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="12" fill="#064e3b" font-weight="bold">Nearby Masjid Platform • ডিজিটাল মসজিদ সময়সূচি ব্যবস্থাপনা</text>
 </svg>`;
 }
 

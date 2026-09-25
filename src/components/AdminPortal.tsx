@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, Plus, Upload, CheckCircle2, AlertTriangle, RefreshCw,
   Clock, Eye, Edit3, Trash2, Camera, Sparkles, MapPin, Check,
-  RotateCcw, Save
+  RotateCcw, Save, Image as ImageIcon, Link2
 } from 'lucide-react';
 import { MosqueData } from '@/types/masjid';
 import { BANGLADESH_DIVISIONS } from '@/lib/geoUtils';
@@ -15,10 +15,49 @@ import { LocationPickerMap } from '@/components/LocationPickerMap';
 const DRAFT_MOSQUE_KEY = 'nearby_masjid_add_draft_v1';
 const ADMIN_TAB_KEY = 'nearby_masjid_admin_tab_v1';
 
+export const PRESET_MOSQUE_COVERS = [
+  {
+    id: 'guthia',
+    nameBn: 'গুঠিয়া মসজিদ কমপ্লেক্স (বরিশাল)',
+    nameEn: 'Guthia Mosque Complex',
+    url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80'
+  },
+  {
+    id: 'mukarram',
+    nameBn: 'বায়তুল মোকাররম জাতীয় মসজিদ স্টাইল',
+    nameEn: 'Baitul Mukarram National Style',
+    url: 'https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=1200&q=80'
+  },
+  {
+    id: 'terracotta',
+    nameBn: 'ঐতিহ্যবাহী লাল টেরাকোটা মসজিদ',
+    nameEn: 'Traditional Terracotta / Brick Masjid',
+    url: 'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=1200&q=80'
+  },
+  {
+    id: 'sunset',
+    nameBn: 'সূর্যাস্তে সোনালী গম্বুজ ও মিনার',
+    nameEn: 'Golden Sunset Dome & Minaret',
+    url: 'https://images.unsplash.com/photo-1591604129939-f1efa4d9f7fa?auto=format&fit=crop&w=1200&q=80'
+  },
+  {
+    id: 'modern',
+    nameBn: 'আধুনিক শ্বেতশুভ্র ইসলামিক আর্কিটেকচার',
+    nameEn: 'Modern White Islamic Architecture',
+    url: 'https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?auto=format&fit=crop&w=1200&q=80'
+  },
+  {
+    id: 'serene',
+    nameBn: 'সবুজ গম্বুজ ও উন্মুক্ত চত্বর',
+    nameEn: 'Serene Green Dome & Courtyard',
+    url: 'https://images.unsplash.com/photo-1519817650390-64a93db51149?auto=format&fit=crop&w=1200&q=80'
+  }
+];
+
 const INITIAL_ADD_FORM = {
   mosque_name_bn: '',
   mosque_name_en: '',
-  image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80',
+  image: PRESET_MOSQUE_COVERS[0].url,
   address: '',
   division: 'Dhaka',
   district: 'Dhaka',
@@ -75,6 +114,55 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
   const [addLoading, setAddLoading] = useState<boolean>(false);
   const [draftRestoredNotice, setDraftRestoredNotice] = useState<boolean>(false);
   const [isFormDirty, setIsFormDirty] = useState<boolean>(false);
+  const [coverPhotoSource, setCoverPhotoSource] = useState<'preset' | 'device' | 'url'>('preset');
+  const [showUrlInput, setShowUrlInput] = useState<boolean>(false);
+  const [isCompressingImage, setIsCompressingImage] = useState<boolean>(false);
+
+  // Handle Cover Photo Upload from Device / Camera
+  const handleCoverPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert(lang === 'bn' ? 'অনুগ্রহ করে একটি ছবি ফাইল আপলোড করুন (JPEG, PNG, WebP)' : 'Please upload a valid image file');
+      return;
+    }
+
+    setIsCompressingImage(true);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        const maxDim = 1200;
+
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.85);
+          setAddForm((prev) => ({ ...prev, image: compressed }));
+          setCoverPhotoSource('device');
+        }
+        setIsCompressingImage(false);
+      };
+      img.onerror = () => setIsCompressingImage(false);
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Restore draft and active tab from localStorage on initial mount
   useEffect(() => {
@@ -875,14 +963,153 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Mosque Cover Photo URL</label>
-            <input
-              type="url"
-              value={addForm.image}
-              onChange={(e) => setAddForm({ ...addForm, image: e.target.value })}
-              className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-800"
-            />
+          {/* ======================================================== */}
+          {/* MOSQUE COVER PHOTO SECTION (UPLOAD / PRESETS / URL) */}
+          {/* ======================================================== */}
+          <div className="space-y-3 pt-2 border-t border-slate-200">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-emerald-700" />
+                <span>
+                  {lang === 'bn' ? 'মসজিদের কভার ছবি (Cover Photo)' : 'Mosque Cover Photo'}
+                </span>
+              </label>
+              <span className="text-[11px] text-slate-500 font-medium">
+                {coverPhotoSource === 'device' 
+                  ? (lang === 'bn' ? '📸 ডিভাইস থেকে আপলোডকৃত' : '📸 Custom Device Photo') 
+                  : coverPhotoSource === 'url'
+                  ? (lang === 'bn' ? '🔗 কাস্টম ওয়েব লিঙ্ক' : '🔗 Web Image Link')
+                  : (lang === 'bn' ? '🖼️ গ্যালারি প্রিসেট' : '🖼️ Preset Selected')}
+              </span>
+            </div>
+
+            {/* Live Cover Photo Card Preview */}
+            <div className="relative w-full h-44 rounded-2xl overflow-hidden border border-slate-300 bg-slate-900 shadow-inner group">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={addForm.image}
+                alt="Cover Preview"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+              
+              {/* Overlay preview labels */}
+              <div className="absolute bottom-3 left-3 right-3 text-white">
+                <div className="text-[10px] bg-emerald-700 text-amber-300 font-bold px-2 py-0.5 rounded-full inline-block mb-1 shadow">
+                  {lang === 'bn' ? 'লাইভ প্রিভিউ' : 'Live Preview in App'}
+                </div>
+                <h4 className="text-sm font-bold font-serif leading-tight truncate">
+                  {addForm.mosque_name_bn || (lang === 'bn' ? 'মসজিদের নাম এখানে প্রদর্শিত হবে' : 'Mosque Name Preview')}
+                </h4>
+                <p className="text-[11px] text-slate-300 truncate">
+                  {addForm.mosque_name_en || (lang === 'bn' ? 'ইংরেজি নাম' : 'English Name')} • {addForm.address || (lang === 'bn' ? 'ঠিকানা' : 'Address')}
+                </p>
+              </div>
+
+              {isCompressingImage && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center text-white text-xs font-bold gap-2">
+                  <Camera className="w-5 h-5 animate-pulse text-amber-400" />
+                  <span>{lang === 'bn' ? 'ছবি প্রসেস হচ্ছে...' : 'Optimizing photo...'}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Upload from Device / Camera button */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="file"
+                id="mosqueCoverUpload"
+                accept="image/*"
+                onChange={handleCoverPhotoUpload}
+                className="hidden"
+              />
+              <label
+                htmlFor="mosqueCoverUpload"
+                className="flex-1 py-2.5 px-4 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-colors"
+              >
+                <Camera className="w-4 h-4 text-amber-400" />
+                <span>
+                  {lang === 'bn' 
+                    ? 'ডিভাইস বা ক্যামেরা থেকে ছবি আপলোড করুন' 
+                    : 'Upload from Device / Camera Photo'}
+                </span>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => setShowUrlInput(!showUrlInput)}
+                className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors border border-slate-300"
+              >
+                <Link2 className="w-3.5 h-3.5 text-slate-500" />
+                <span>{lang === 'bn' ? 'ওয়েব লিঙ্ক (URL)' : 'Web URL'}</span>
+              </button>
+            </div>
+
+            {/* Optional URL Input */}
+            {showUrlInput && (
+              <div className="space-y-1 animate-in fade-in">
+                <input
+                  type="url"
+                  value={addForm.image}
+                  onChange={(e) => {
+                    setAddForm({ ...addForm, image: e.target.value });
+                    setCoverPhotoSource('url');
+                  }}
+                  placeholder="https://example.com/mosque-photo.jpg"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+                <p className="text-[10px] text-slate-400">
+                  {lang === 'bn' ? 'যেকোনো পাবলিক ইমেজ লিঙ্ক সরাসরি পেস্ট করতে পারেন' : 'Paste any direct public image URL'}
+                </p>
+              </div>
+            )}
+
+            {/* Curated Preset Mosque Photo Gallery */}
+            <div className="pt-2">
+              <span className="block text-[11px] font-bold text-slate-600 mb-2">
+                {lang === 'bn' ? 'অথবা পছন্দের মসজিদ প্রিসেট ছবি বেছে নিন:' : 'Or choose from curated architectural presets:'}
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {PRESET_MOSQUE_COVERS.map((preset) => {
+                  const isSelected = addForm.image === preset.url;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => {
+                        setAddForm({ ...addForm, image: preset.url });
+                        setCoverPhotoSource('preset');
+                      }}
+                      className={`relative rounded-xl overflow-hidden border-2 text-left group transition-all ${
+                        isSelected 
+                          ? 'border-amber-500 shadow-md ring-2 ring-amber-400/40' 
+                          : 'border-slate-200 hover:border-emerald-500'
+                      }`}
+                    >
+                      <div className="h-16 w-full bg-slate-100 overflow-hidden relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={preset.url}
+                          alt={preset.nameEn}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          loading="lazy"
+                        />
+                        {isSelected && (
+                          <div className="absolute top-1 right-1 bg-amber-500 text-emerald-950 p-1 rounded-full shadow">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-1.5 bg-white">
+                        <div className="text-[10px] font-bold text-slate-800 truncate leading-tight">
+                          {lang === 'bn' ? preset.nameBn : preset.nameEn}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           <button

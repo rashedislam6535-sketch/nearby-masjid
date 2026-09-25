@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="600" height="520" viewBox="0 0 600 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="600" height="540" viewBox="0 0 600 540" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Background with Islamic aesthetic styling -->
-  <rect width="600" height="520" rx="16" fill="#fdfbf7" stroke="#047857" stroke-width="4"/>
-  <rect x="12" y="12" width="576" height="496" rx="12" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <rect width="600" height="540" rx="16" fill="#fdfbf7" stroke="#047857" stroke-width="4"/>
+  <rect x="12" y="12" width="576" height="516" rx="12" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6 3"/>
 
   <!-- Header Section -->
-  <rect x="25" y="24" width="550" height="78" rx="10" fill="#064e3b"/>
-  <text x="300" y="52" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="18" font-weight="bold" fill="#fef3c7">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</text>
-  <text x="300" y="78" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffffff">বাইতুল আমান জামে মসজিদ</text>
-  <text x="300" y="94" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#cbd5e1">Sample Mosque Chart for OCR Testing</text>
+  <rect x="25" y="22" width="550" height="76" rx="10" fill="#064e3b"/>
+  <text x="300" y="48" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="17" font-weight="bold" fill="#fef3c7">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</text>
+  <text x="300" y="73" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#ffffff">বাইতুল আমান জামে মসজিদ</text>
+  <text x="300" y="89" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="11" fill="#cbd5e1">Sample Mosque Chart for OCR Testing</text>
 
   <!-- Timetable Meta Info -->
-  <rect x="25" y="112" width="550" height="34" rx="6" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
-  <text x="45" y="134" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#92400e">নামাজের সময়সূচি (Prayer Timetable)</text>
-  <text x="555" y="134" text-anchor="end" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#b45309">মেয়াদ: চলতি সময়সূচি</text>
+  <rect x="25" y="108" width="550" height="34" rx="6" fill="#fef3c7" stroke="#fcd34d" stroke-width="1"/>
+  <text x="45" y="130" font-family="'Segoe UI', Arial, sans-serif" font-size="13" font-weight="bold" fill="#92400e">নামাজের সময়সূচি (Prayer Timetable)</text>
+  <text x="555" y="130" text-anchor="end" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="bold" fill="#b45309">মেয়াদ: চলতি সময়সূচি</text>
 
-  <!-- Table Column Headers -->
-  <rect x="25" y="152" width="550" height="4" fill="#047857"/>
-  <text x="45" y="176" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4b5563">ওয়াক্ত (WAQT)</text>
-  <text x="260" y="176" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#4b5563">আযান (AZAN)</text>
-  <text x="420" y="176" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#064e3b">জামাত (JAMAT)</text>
+  <!-- Table Column Headers Bar (Clearly separated with distinct background) -->
+  <rect x="25" y="150" width="550" height="34" rx="6" fill="#064e3b" stroke="#047857" stroke-width="1"/>
+  <text x="45" y="172" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="bold" fill="#fef3c7">ওয়াক্ত (WAQT)</text>
+  <text x="260" y="172" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="bold" fill="#fef3c7">আযান (AZAN)</text>
+  <text x="420" y="172" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="bold" fill="#fbbf24">জামাত (JAMAT)</text>
 
   <!-- Rows -->
   
-      <rect x="25" y="160" width="550" height="38" rx="6" fill="#064e3b15" />
-      <text x="45" y="184" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#064e3b">ফজর / Fajr</text>
-      <text x="260" y="184" font-family="Arial, sans-serif" font-size="14" fill="#047857">04:50 AM</text>
-      <text x="420" y="184" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">05:10 AM</text>
+      <rect x="25" y="192" width="550" height="36" rx="6" fill="#064e3b12" />
+      <text x="45" y="215" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="bold" fill="#064e3b">ফজর / Fajr</text>
+      <text x="260" y="215" font-family="'Segoe UI', Arial, sans-serif" font-size="14" font-weight="600" fill="#047857">04:50 AM</text>
+      <text x="420" y="215" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">05:10 AM</text>
     
-      <rect x="25" y="204" width="550" height="38" rx="6" fill="#ffffff" />
-      <text x="45" y="228" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#064e3b">যোহর / Dhuhr</text>
-      <text x="260" y="228" font-family="Arial, sans-serif" font-size="14" fill="#047857">01:00 PM</text>
-      <text x="420" y="228" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">01:15 PM</text>
+      <rect x="25" y="234" width="550" height="36" rx="6" fill="#ffffff" />
+      <text x="45" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="bold" fill="#064e3b">যোহর / Dhuhr</text>
+      <text x="260" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="14" font-weight="600" fill="#047857">01:00 PM</text>
+      <text x="420" y="257" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">01:15 PM</text>
     
-      <rect x="25" y="248" width="550" height="38" rx="6" fill="#064e3b15" />
-      <text x="45" y="272" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#064e3b">আসর / Asr</text>
-      <text x="260" y="272" font-family="Arial, sans-serif" font-size="14" fill="#047857">04:10 PM</text>
-      <text x="420" y="272" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">04:25 PM</text>
+      <rect x="25" y="276" width="550" height="36" rx="6" fill="#064e3b12" />
+      <text x="45" y="299" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="bold" fill="#064e3b">আসর / Asr</text>
+      <text x="260" y="299" font-family="'Segoe UI', Arial, sans-serif" font-size="14" font-weight="600" fill="#047857">04:10 PM</text>
+      <text x="420" y="299" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">04:25 PM</text>
     
-      <rect x="25" y="292" width="550" height="38" rx="6" fill="#ffffff" />
-      <text x="45" y="316" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#064e3b">মাগরিব / Maghrib</text>
-      <text x="260" y="316" font-family="Arial, sans-serif" font-size="14" fill="#047857">06:05 PM</text>
-      <text x="420" y="316" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">06:10 PM</text>
+      <rect x="25" y="318" width="550" height="36" rx="6" fill="#ffffff" />
+      <text x="45" y="341" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="bold" fill="#064e3b">মাগরিব / Maghrib</text>
+      <text x="260" y="341" font-family="'Segoe UI', Arial, sans-serif" font-size="14" font-weight="600" fill="#047857">06:05 PM</text>
+      <text x="420" y="341" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">06:10 PM</text>
     
-      <rect x="25" y="336" width="550" height="38" rx="6" fill="#064e3b15" />
-      <text x="45" y="360" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#064e3b">এশা / Isha</text>
-      <text x="260" y="360" font-family="Arial, sans-serif" font-size="14" fill="#047857">07:45 PM</text>
-      <text x="420" y="360" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">08:00 PM</text>
+      <rect x="25" y="360" width="550" height="36" rx="6" fill="#064e3b12" />
+      <text x="45" y="383" font-family="'Segoe UI', Arial, sans-serif" font-size="15" font-weight="bold" fill="#064e3b">এশা / Isha</text>
+      <text x="260" y="383" font-family="'Segoe UI', Arial, sans-serif" font-size="14" font-weight="600" fill="#047857">07:45 PM</text>
+      <text x="420" y="383" font-family="'Segoe UI', Arial, sans-serif" font-size="16" font-weight="bold" fill="#b45309">08:00 PM</text>
     
 
   <!-- Footer Banner -->
-  <line x1="25" y1="465" x2="575" y2="465" stroke="#d1d5db" stroke-width="1"/>
-  <text x="300" y="488" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#064e3b" font-weight="bold">Nearby Masjid Platform • ডিজিটাল মসজিদ সময়সূচি ব্যবস্থাপনা</text>
+  <line x1="25" y1="480" x2="575" y2="480" stroke="#d1d5db" stroke-width="1"/>
+  <text x="300" y="504" text-anchor="middle" font-family="'Segoe UI', Arial, sans-serif" font-size="12" fill="#064e3b" font-weight="bold">Nearby Masjid Platform • ডিজিটাল মসজিদ সময়সূচি ব্যবস্থাপনা</text>
 </svg>
