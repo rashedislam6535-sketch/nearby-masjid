@@ -7,7 +7,7 @@ export function getDbPool(): Pool {
 
   const connectionString =
     process.env.DATABASE_URL ||
-    'postgresql://postgres.mkmrifjcczeohsppqhni:W36W7Hv%3FP8B2hdt@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres';
+    'postgresql://postgres.ytfxtwzxvjdtpwhitmzo:NearbyMasjid2026%21Secure@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres';
 
   pool = new Pool({
     connectionString,
