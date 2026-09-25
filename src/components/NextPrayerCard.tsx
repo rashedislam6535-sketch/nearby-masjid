@@ -42,11 +42,11 @@ export function NextPrayerCard({
   lang
 }: NextPrayerCardProps) {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
+  const [mounted, setMounted] = useState<boolean>(false);
   const [showAreaPicker, setShowAreaPicker] = useState<boolean>(false);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(false);
 
-  // Clock tick every second for real-time live countdown
   useEffect(() => {
+    setMounted(true);
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -56,12 +56,14 @@ export function NextPrayerCard({
   const tracking = calculatePrayerCountdown(activeMosquePrayer, currentTime);
 
   // Format current live time
-  const formattedCurrentTime = currentTime.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
-  });
+  const formattedCurrentTime = mounted
+    ? currentTime.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      })
+    : '04:00:00 PM';
 
   return (
     <div className="space-y-3">
@@ -88,7 +90,7 @@ export function NextPrayerCard({
               <Clock className="w-3 h-3 text-amber-400" />
               <span>{lang === 'bn' ? 'বর্তমান সময় (BST)' : 'Current Time (BST)'}</span>
             </div>
-            <div className="text-sm font-mono font-bold text-amber-300">
+            <div suppressHydrationWarning className="text-sm font-mono font-bold text-amber-300">
               {formattedCurrentTime}
             </div>
           </div>
@@ -227,18 +229,18 @@ export function NextPrayerCard({
             </span>
           </div>
         ) : (
-          <div className="mt-3.5 bg-emerald-50 rounded-xl px-3.5 py-2.5 flex items-center justify-between border border-emerald-100">
+          <div suppressHydrationWarning className="mt-3.5 bg-emerald-50 rounded-xl px-3.5 py-2.5 flex items-center justify-between border border-emerald-100">
             <div className="flex items-center gap-2 text-emerald-900 text-sm font-medium">
               <Clock className="w-4 h-4 text-emerald-700" />
               <span>{lang === 'bn' ? 'বাকি সময়:' : 'Remaining:'}</span>
-              <strong className="text-emerald-950 font-bold text-base">
-                {tracking.diffMinutes > 0
+              <strong suppressHydrationWarning className="text-emerald-950 font-bold text-base">
+                {mounted ? (tracking.diffMinutes > 0
                   ? `${tracking.diffMinutes} ${lang === 'bn' ? 'মিনিট' : 'minutes'}`
-                  : `${tracking.diffSeconds} ${lang === 'bn' ? 'সেকেন্ড' : 'seconds'}`}
+                  : `${tracking.diffSeconds} ${lang === 'bn' ? 'সেকেন্ড' : 'seconds'}`) : 'Calculating...'}
               </strong>
             </div>
-            <div className="text-xs text-emerald-700 font-medium">
-              {tracking.countdownText}
+            <div suppressHydrationWarning className="text-xs text-emerald-700 font-medium">
+              {mounted ? tracking.countdownText : ''}
             </div>
           </div>
         )}

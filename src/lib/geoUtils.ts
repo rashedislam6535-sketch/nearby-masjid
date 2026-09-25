@@ -112,6 +112,24 @@ export const BD_LOCATION_PRESETS: BDLocationPreset[] = [
     area: 'Shat Gombuj Area',
     lat: 22.6744,
     lng: 89.7417
+  },
+  {
+    name: 'Barisal Sadar, Barisal',
+    nameBn: 'বরিশাল সদর, বরিশাল',
+    division: 'Barisal',
+    district: 'Barisal',
+    area: 'Sadar Road & Collectorate',
+    lat: 22.7010,
+    lng: 90.3535
+  },
+  {
+    name: 'Guthia, Barisal',
+    nameBn: 'গুঠিয়া, উজিরপুর, বরিশাল',
+    division: 'Barisal',
+    district: 'Barisal',
+    area: 'Guthia Baitul Aman Complex',
+    lat: 22.7981,
+    lng: 90.2642
   }
 ];
 
@@ -120,6 +138,14 @@ export const BANGLADESH_DIVISIONS: Record<string, Record<string, string[]>> = {
     Dhaka: ['Mirpur', 'Paltan', 'Gulshan', 'Dhanmondi', 'Uttara', 'Mohammadpur', 'Kotwali', 'Dakshinkhan', 'Tejgaon', 'Badda'],
     Gazipur: ['Gazipur Sadar', 'Kaliakair', 'Kapasia', 'Sreepur', 'Kaliganj'],
     Narayanganj: ['Narayanganj Sadar', 'Bandar', 'Rupganj', 'Sonargaon', 'Araihazar']
+  },
+  Barisal: {
+    Barisal: ['Barisal Sadar', 'Wazirpur', 'Gournadi', 'Bakerganj', 'Babuganj', 'Banaripara', 'Muladi', 'Mehendiganj', 'Agailjhara', 'Hizla'],
+    Patuakhali: ['Patuakhali Sadar', 'Kuakata', 'Galachipa', 'Bauphal', 'Kalapara'],
+    Bhola: ['Bhola Sadar', 'Char Fasson', 'Borhanuddin', 'Lalmohan'],
+    Jhalokati: ['Jhalokati Sadar', 'Nalchity', 'Rajapur', 'Kathalia'],
+    Pirojpur: ['Pirojpur Sadar', 'Mathbaria', 'Bhandaria', 'Nazirpur'],
+    Barguna: ['Barguna Sadar', 'Amtali', 'Patharghata', 'Betagi']
   },
   Chittagong: {
     Chittagong: ['Kotwali', 'Panchlaish', 'Double Mooring', 'Halishahar', 'Pahartali', 'Hathazari'],
