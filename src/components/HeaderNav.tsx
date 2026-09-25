@@ -20,10 +20,9 @@ export function HeaderNav({ activeTab, setActiveTab, lang, setLang, expiredCount
           onClick={() => setActiveTab('list')}
           className="flex items-center gap-2.5 cursor-pointer group"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-800 to-amber-500 p-0.5 shadow-sm shadow-amber-500/20 flex items-center justify-center">
-            <div className="w-full h-full bg-emerald-950 rounded-[10px] flex items-center justify-center">
-              <Landmark className="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" />
-            </div>
+          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm shadow-amber-500/20 flex items-center justify-center border border-amber-400/40">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="Nearby Masjid Logo" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
