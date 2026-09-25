@@ -23,7 +23,7 @@ export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang,
         >
           <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm shadow-amber-500/20 flex items-center justify-center border border-amber-400/40">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/icon.svg" alt="Nearby Masjid Logo" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <img src="/logo.png" alt="Nearby Masjid Logo" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
