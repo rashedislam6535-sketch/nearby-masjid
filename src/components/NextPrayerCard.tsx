@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, Navigation, Clock, Bell, Sparkles, ChevronDown } from 'lucide-react';
+import { MapPin, Navigation, Clock, Bell, Sparkles, ChevronDown, Volume2 } from 'lucide-react';
 import { calculatePrayerCountdown } from '@/lib/prayerTracker';
 import { BD_LOCATION_PRESETS, BDLocationPreset } from '@/lib/geoUtils';
+import { getHijriDate, getDailyWisdom, playSoftChime } from '@/lib/islamicUtils';
 
 interface NextPrayerCardProps {
   currentLocation: {
@@ -75,23 +76,37 @@ export function NextPrayerCard({
 
         <div className="flex items-center justify-between relative z-10 mb-2.5">
           <div>
-            <div className="flex items-center gap-1.5 text-amber-400 text-xs font-semibold tracking-wide uppercase">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{lang === 'bn' ? 'আসসালামু আলাইকুম' : 'Assalamu Alaikum'}</span>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-emerald-950/70 px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                <span>🌙</span>
+                <span>{lang === 'bn' ? getHijriDate(currentTime).formattedBn : getHijriDate(currentTime).formattedEn}</span>
+              </span>
+              <span className="text-[10px] text-emerald-300/80 uppercase tracking-wider font-semibold">
+                {lang === 'bn' ? 'আসসালামু আলাইকুম' : 'Assalamu Alaikum'}
+              </span>
             </div>
-            <h1 className="text-xl font-bold font-serif tracking-tight text-white mt-0.5">
-              {lang === 'bn' ? 'কাছের মসজিদ খুঁজুন' : 'Find Nearby Mosques'}
+            <h1 className="text-xl font-bold font-serif tracking-tight text-white">
+              {lang === 'bn' ? 'কাছের মসজিদ ও নামাজের সময়' : 'Nearby Mosques & Prayer Times'}
             </h1>
           </div>
 
-          {/* Current Live Digital Clock */}
-          <div className="text-right">
-            <div className="text-[11px] font-medium text-emerald-300/80 flex items-center gap-1 justify-end">
-              <Clock className="w-3 h-3 text-amber-400" />
-              <span>{lang === 'bn' ? 'বর্তমান সময় (BST)' : 'Current Time (BST)'}</span>
-            </div>
-            <div suppressHydrationWarning className="text-sm font-mono font-bold text-amber-300">
-              {formattedCurrentTime}
+          {/* Current Live Digital Clock & Chime */}
+          <div className="text-right flex items-center gap-2">
+            <button
+              onClick={() => playSoftChime()}
+              className="p-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 transition-all active:scale-95 shadow-sm"
+              title={lang === 'bn' ? 'নরম অ্যালার্ট সাউন্ড টেস্ট করুন' : 'Test Soft Prayer Chime'}
+            >
+              <Bell className="w-4 h-4" />
+            </button>
+            <div>
+              <div className="text-[11px] font-medium text-emerald-300/80 flex items-center gap-1 justify-end">
+                <Clock className="w-3 h-3 text-amber-400" />
+                <span>{lang === 'bn' ? 'লাইভ সময় (BST)' : 'Live BST Time'}</span>
+              </div>
+              <div suppressHydrationWarning className="text-sm font-mono font-bold text-amber-300">
+                {formattedCurrentTime}
+              </div>
             </div>
           </div>
         </div>
@@ -271,6 +286,18 @@ export function NextPrayerCard({
               </div>
             );
           })}
+        </div>
+
+        {/* Daily Islamic Wisdom Reflection */}
+        <div className="mt-3 pt-2.5 border-t border-slate-200/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-[11px] text-slate-500">
+          <div className="flex items-center gap-1.5 italic">
+            <span className="text-amber-500">❝</span>
+            <span>{lang === 'bn' ? getDailyWisdom().verseBn : getDailyWisdom().verseEn}</span>
+            <span className="text-amber-500">❞</span>
+          </div>
+          <span className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 whitespace-nowrap">
+            {lang === 'bn' ? getDailyWisdom().sourceBn : getDailyWisdom().sourceEn}
+          </span>
         </div>
       </div>
     </div>

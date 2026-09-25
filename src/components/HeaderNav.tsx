@@ -6,12 +6,13 @@ import { Compass, Map, PlusCircle, Landmark } from 'lucide-react';
 interface HeaderNavProps {
   activeTab: 'list' | 'map' | 'admin';
   setActiveTab: (tab: 'list' | 'map' | 'admin') => void;
+  onOpenQibla?: () => void;
   lang: 'en' | 'bn';
   setLang: (lang: 'en' | 'bn') => void;
   expiredCount?: number;
 }
 
-export function HeaderNav({ activeTab, setActiveTab, lang, setLang, expiredCount = 0 }: HeaderNavProps) {
+export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang, expiredCount = 0 }: HeaderNavProps) {
   return (
     <header className="sticky top-0 z-40 bg-emerald-950/95 backdrop-blur-md border-b border-emerald-800/50 shadow-md">
       <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
@@ -85,6 +86,18 @@ export function HeaderNav({ activeTab, setActiveTab, lang, setLang, expiredCount
               )}
             </button>
           </nav>
+
+          {/* Qibla Compass Trigger Button */}
+          {onOpenQibla && (
+            <button
+              onClick={onOpenQibla}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all active:scale-95 shadow-sm"
+              title={lang === 'bn' ? 'কিবলা কম্পাস দেখুন' : 'Open Qibla Compass'}
+            >
+              <span>🕋</span>
+              <span className="hidden sm:inline font-bold">{lang === 'bn' ? 'কিবলা' : 'Qibla'}</span>
+            </button>
+          )}
 
           {/* Language Switcher */}
           <button

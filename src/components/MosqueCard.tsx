@@ -125,6 +125,22 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
           </div>
         )}
 
+        {/* 5 Daily Prayers Mini Strip */}
+        <div className="grid grid-cols-5 gap-1 bg-slate-50/90 p-1.5 rounded-xl border border-slate-200/80 text-[10px]">
+          {[
+            { key: 'Fajr', bn: 'ফজর', time: prayer.fajr },
+            { key: 'Dhuhr', bn: 'যোহর', time: prayer.dhuhr },
+            { key: 'Asr', bn: 'আসর', time: prayer.asr },
+            { key: 'Maghrib', bn: 'মাগরিব', time: prayer.maghrib },
+            { key: 'Isha', bn: 'এশা', time: prayer.isha },
+          ].map((item) => (
+            <div key={item.key} className="text-center">
+              <span className="text-slate-500 block font-medium truncate">{lang === 'bn' ? item.bn : item.key}</span>
+              <span className="font-bold text-emerald-950 font-mono block truncate">{item.time.split(' ')[0]}</span>
+            </div>
+          ))}
+        </div>
+
         {/* Qibla Direction Information Chip */}
         <div className="flex items-center justify-between text-[11px] px-2.5 py-1.5 bg-slate-50 border border-slate-200/90 rounded-xl text-slate-700">
           <div className="flex items-center gap-1.5 font-medium text-emerald-950">

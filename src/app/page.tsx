@@ -7,6 +7,8 @@ import { MosqueCard } from '@/components/MosqueCard';
 import { MosqueDetailsModal } from '@/components/MosqueDetailsModal';
 import { AdminPortal } from '@/components/AdminPortal';
 import { MasjidMap } from '@/components/MasjidMap';
+import { BottomNavBar } from '@/components/BottomNavBar';
+import { QiblaCompassModal } from '@/components/QiblaCompassModal';
 import { MosqueData } from '@/types/masjid';
 import { Search, Filter, AlertTriangle, RefreshCw, Compass, MapPin, Navigation, Sparkles, SlidersHorizontal } from 'lucide-react';
 import { BD_LOCATION_PRESETS } from '@/lib/geoUtils';
@@ -14,6 +16,7 @@ import { BD_LOCATION_PRESETS } from '@/lib/geoUtils';
 export default function NearbyMasjidApp() {
   const [activeTab, setActiveTab] = useState<'list' | 'map' | 'admin'>('list');
   const [lang, setLang] = useState<'en' | 'bn'>('en');
+  const [showQiblaModal, setShowQiblaModal] = useState<boolean>(false);
 
   // User Location State - Default to Mirpur Area, Dhaka
   const [location, setLocation] = useState({
@@ -143,13 +146,14 @@ export default function NearbyMasjidApp() {
       <HeaderNav
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onOpenQibla={() => setShowQiblaModal(true)}
         lang={lang}
         setLang={setLang}
         expiredCount={expiredCount}
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 space-y-4">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 pb-24 sm:pb-8 space-y-4">
         
         {/* ========================================================= */}
         {/* VIEW 1: NEARBY MOSQUES LIST & DASHBOARD */}
@@ -508,6 +512,24 @@ export default function NearbyMasjidApp() {
           </div>
         </div>
       </footer>
+
+      {/* Mobile Floating Bottom Navigation Bar */}
+      <BottomNavBar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenQibla={() => setShowQiblaModal(true)}
+        lang={lang}
+        expiredCount={expiredCount}
+      />
+
+      {/* Qibla Direction Compass Modal */}
+      {showQiblaModal && (
+        <QiblaCompassModal
+          userLocation={location}
+          onClose={() => setShowQiblaModal(false)}
+          lang={lang}
+        />
+      )}
     </div>
   );
 }
