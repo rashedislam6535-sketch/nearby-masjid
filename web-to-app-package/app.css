@@ -1,0 +1,935 @@
+/* Nearby Masjid Mobile App Stylesheet (Web to Phone App) */
+:root {
+  --primary-bg: #031e17;
+  --secondary-bg: #064e3b;
+  --card-bg: rgba(6, 78, 59, 0.45);
+  --card-border: rgba(52, 211, 153, 0.25);
+  --gold-primary: #f59e0b;
+  --gold-light: #fef3c7;
+  --emerald-accent: #10b981;
+  --emerald-light: #34d399;
+  --text-main: #f9fafb;
+  --text-muted: #a7f3d0;
+  --danger: #ef4444;
+  --success: #10b981;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  user-select: none;
+}
+
+body, html {
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-bg);
+  color: var(--text-main);
+  overflow: hidden;
+  position: fixed;
+}
+
+/* App Container */
+#app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  background: radial-gradient(circle at 50% 0%, #065f46 0%, #022c22 65%, #01140e 100%);
+}
+
+/* Splash Screen */
+#splash-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 50% 30%, #065f46 0%, #022c22 70%, #01140e 100%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+#splash-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.splash-logo-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin-bottom: 24px;
+}
+
+.splash-logo-glow {
+  position: absolute;
+  inset: -15px;
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.45) 0%, rgba(16, 185, 129, 0) 70%);
+  border-radius: 50%;
+  animation: pulse-glow 2.5s infinite alternate;
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  100% { transform: scale(1.15); opacity: 1; }
+}
+
+.splash-logo-img {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 28px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6), 0 0 0 2px rgba(245, 158, 11, 0.4);
+  object-fit: cover;
+}
+
+.splash-title-bn {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--gold-light);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  margin-bottom: 6px;
+}
+
+.splash-title-en {
+  font-size: 14px;
+  color: var(--emerald-light);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 28px;
+}
+
+.splash-loader-bar {
+  width: 180px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.splash-loader-progress {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #f59e0b);
+  border-radius: 4px;
+  animation: loading-slide 1.8s infinite ease-in-out;
+  transform-origin: 0% 50%;
+}
+
+@keyframes loading-slide {
+  0% { transform: scaleX(0); }
+  50% { transform: scaleX(0.7); }
+  100% { transform: scaleX(1); }
+}
+
+.splash-status-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  min-height: 20px;
+}
+
+.splash-btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-splash {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #022c22;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+}
+
+.btn-splash-secondary {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-main);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Online WebView Container */
+#online-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  z-index: 50;
+  background: #022c22;
+}
+
+#online-view.hidden {
+  display: none;
+}
+
+.online-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--safe-top) + 8px) 14px 8px 14px;
+  background: rgba(2, 44, 34, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  z-index: 10;
+}
+
+.online-bar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.online-bar-brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.online-bar-brand span {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+.online-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-icon-bar {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--text-main);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.online-iframe-wrap {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#online-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #022c22;
+}
+
+/* Offline Standalone View */
+#offline-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  z-index: 40;
+}
+
+#offline-view.hidden {
+  display: none;
+}
+
+/* Top Navigation Bar */
+.app-header {
+  padding: calc(var(--safe-top) + 10px) 16px 12px 16px;
+  background: rgba(3, 30, 23, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 30;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+}
+
+.header-text h1 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--gold-light);
+  line-height: 1.2;
+}
+
+.header-text p {
+  font-size: 11px;
+  color: var(--emerald-light);
+  line-height: 1.2;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-mode {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--emerald-light);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  cursor: pointer;
+}
+
+/* Main Content Area */
+.app-main {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  padding-bottom: calc(75px + var(--safe-bottom));
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tabs View */
+.tab-page {
+  display: none;
+}
+
+.tab-page.active {
+  display: block;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Search and Filters */
+.search-box {
+  position: relative;
+  margin-bottom: 12px;
+}
+
+.search-input {
+  width: 100%;
+  background: rgba(2, 44, 34, 0.85);
+  border: 1px solid var(--card-border);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 16px 12px 42px;
+  font-size: 14px;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.search-input::placeholder {
+  color: rgba(167, 243, 208, 0.6);
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--emerald-light);
+}
+
+.filter-scroll-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+  scrollbar-width: none;
+}
+
+.filter-scroll-row::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-chip {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filter-chip.active {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-weight: 700;
+  border-color: #34d399;
+}
+
+/* Quick Action Banner */
+.action-banner {
+  background: linear-gradient(135deg, rgba(6, 95, 70, 0.6), rgba(2, 44, 34, 0.85));
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.banner-content h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+.banner-content p {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.btn-gps {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #022c22;
+  border: none;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+/* Mosque Cards */
+.mosque-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 14px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+}
+
+.mosque-card-img-wrap {
+  position: relative;
+  height: 140px;
+  width: 100%;
+  background: #022c22;
+}
+
+.mosque-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mosque-card-dist {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.75);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: var(--gold-light);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 8px;
+  backdrop-filter: blur(4px);
+}
+
+.mosque-card-body {
+  padding: 12px 14px;
+}
+
+.mosque-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.mosque-name-bn {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.mosque-verified-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.mosque-address {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
+.prayer-grid-mini {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  background: rgba(0,0,0,0.25);
+  padding: 8px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.prayer-col-mini .p-name {
+  font-size: 10px;
+  color: var(--emerald-light);
+  font-weight: 600;
+  display: block;
+}
+
+.prayer-col-mini .p-time {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+.mosque-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-card-action {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+}
+
+.btn-primary-action {
+  background: linear-gradient(135deg, #10b981, #047857);
+  color: #fff;
+}
+
+.btn-secondary-action {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--gold-light);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+/* Prayer Times Tab */
+.prayer-hero-card {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.8), rgba(2, 44, 34, 0.95));
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 18px;
+  text-align: center;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.prayer-date-bn {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-primary);
+  margin-bottom: 2px;
+}
+
+.prayer-date-greg {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.next-prayer-badge {
+  display: inline-block;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: var(--gold-light);
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.next-prayer-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.next-prayer-countdown {
+  font-size: 14px;
+  color: var(--emerald-light);
+  font-weight: 600;
+}
+
+.prayer-table-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.prayer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.prayer-row:last-child {
+  border-bottom: none;
+}
+
+.prayer-row.current {
+  background: rgba(16, 185, 129, 0.18);
+  border-left: 4px solid var(--gold-primary);
+}
+
+.prayer-row-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.prayer-row-name-bn {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.prayer-row-name-en {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.prayer-row-time {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--gold-light);
+}
+
+/* Qibla Compass Tab */
+.qibla-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.compass-dial-wrap {
+  position: relative;
+  width: 260px;
+  height: 260px;
+  margin: 20px 0;
+}
+
+.compass-dial-outer {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #064e3b 0%, #022c22 80%);
+  border: 4px solid var(--gold-primary);
+  box-shadow: 0 0 30px rgba(245, 158, 11, 0.3), inset 0 0 20px rgba(0,0,0,0.6);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease-out;
+}
+
+.compass-needle {
+  position: absolute;
+  width: 6px;
+  height: 90px;
+  background: linear-gradient(to top, #ef4444 50%, var(--gold-primary) 50%);
+  border-radius: 3px;
+  transform-origin: bottom center;
+  bottom: 50%;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+}
+
+.kaaba-icon-pin {
+  position: absolute;
+  top: 12px;
+  font-size: 24px;
+}
+
+.qibla-degrees-badge {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--gold-light);
+  margin-top: 10px;
+}
+
+.qibla-direction-text {
+  font-size: 14px;
+  color: var(--emerald-light);
+  margin-top: 4px;
+}
+
+/* Tasbih Tab */
+.tasbih-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 0;
+  text-align: center;
+}
+
+.tasbih-dhikr-badge {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--gold-light);
+  margin-bottom: 8px;
+}
+
+.tasbih-dhikr-trans {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.tasbih-circle-btn {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #065f46 0%, #022c22 85%);
+  border: 5px solid var(--gold-primary);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 25px rgba(245, 158, 11, 0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+  user-select: none;
+}
+
+.tasbih-circle-btn:active {
+  transform: scale(0.93);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.6), 0 0 15px rgba(245, 158, 11, 0.3);
+}
+
+.tasbih-count-num {
+  font-size: 56px;
+  font-weight: 900;
+  color: #fff;
+  line-height: 1;
+}
+
+.tasbih-target-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gold-primary);
+  margin-top: 6px;
+}
+
+.tasbih-controls-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.btn-tasbih-tool {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  padding: 8px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Bottom Navigation Bar */
+.bottom-nav {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(3, 30, 23, 0.96);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--card-border);
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 6px calc(var(--safe-bottom) + 8px) 6px;
+  z-index: 30;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.nav-item.active {
+  color: var(--gold-light);
+  transform: translateY(-2px);
+}
+
+.nav-item.active .nav-icon {
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.6));
+}
+
+.nav-label {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.modal-sheet {
+  width: 100%;
+  max-height: 85vh;
+  background: #022c22;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  border-top: 2px solid var(--card-border);
+  padding: 20px;
+  padding-bottom: calc(var(--safe-bottom) + 24px);
+  overflow-y: auto;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.7);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-header h2 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--gold-light);
+}
+
+.btn-close-modal {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--emerald-light);
+  margin-bottom: 4px;
+}
+
+.form-control {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+}
+
+.btn-submit-form {
+  width: 100%;
+  background: linear-gradient(135deg, #10b981, #047857);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  margin-top: 14px;
+  cursor: pointer;
+}

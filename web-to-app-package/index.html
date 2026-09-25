@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#064e3b">
+  
+  <title>Nearby Masjid — কাছের মসজিদ (বাংলাদেশ)</title>
+  
+  <!-- Favicon and PWA -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon.png">
+  <link rel="apple-touch-icon" href="logo.png">
+
+  <!-- Core App Stylesheet -->
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <div id="app-container">
+
+    <!-- ==================== SPLASH SCREEN ==================== -->
+    <div id="splash-screen">
+      <div class="splash-logo-wrap">
+        <div class="splash-logo-glow"></div>
+        <img src="logo.png" alt="Nearby Masjid App Logo" class="splash-logo-img">
+      </div>
+      <h1 class="splash-title-bn">কাছের মসজিদ</h1>
+      <p class="splash-title-en">Nearby Masjid — Bangladesh</p>
+      
+      <div class="splash-loader-bar">
+        <div class="splash-loader-progress"></div>
+      </div>
+      <p id="splash-status" class="splash-status-text">অ্যাপ লোড হচ্ছে...</p>
+
+      <div class="splash-btn-row">
+        <button onclick="launchOnlineView()" class="btn-splash">🌐 লাইভ ক্লাউড অ্যাপ</button>
+        <button onclick="launchOfflineView()" class="btn-splash btn-splash-secondary">📱 অফলাইন মোড</button>
+      </div>
+    </div>
+
+    <!-- ==================== ONLINE LIVE WEBVIEW ==================== -->
+    <div id="online-view" class="hidden">
+      <div class="online-bar">
+        <div class="online-bar-brand">
+          <img src="logo.png" alt="Logo">
+          <span>কাছের মসজিদ (লাইভ)</span>
+        </div>
+        <div class="online-bar-actions">
+          <button onclick="document.getElementById('online-iframe').contentWindow.location.reload()" class="btn-icon-bar" title="রিলোড">
+            🔄 রিলোড
+          </button>
+          <button onclick="launchOfflineView()" class="btn-icon-bar" title="অফলাইনে যান">
+            📱 অফলাইন
+          </button>
+        </div>
+      </div>
+      <div class="online-iframe-wrap">
+        <iframe id="online-iframe" allow="geolocation; camera; microphone; fullscreen; clipboard-read; clipboard-write"></iframe>
+      </div>
+    </div>
+
+    <!-- ==================== OFFLINE STANDALONE VIEW ==================== -->
+    <div id="offline-view" class="hidden">
+
+      <!-- App Header -->
+      <header class="app-header">
+        <div class="header-left">
+          <img src="logo.png" alt="Nearby Masjid" class="header-logo">
+          <div class="header-text">
+            <h1>কাছের মসজিদ</h1>
+            <p>বাংলাদেশ নামাজ ও মসজিদ ডিরেক্টরি</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <span class="badge-mode" onclick="launchOnlineView()" title="অনলাইনে যান">⚡ লাইভ মোড</span>
+        </div>
+      </header>
+
+      <!-- Main Content Pages -->
+      <main class="app-main">
+
+        <!-- 1. MOSQUES TAB -->
+        <section id="tab-mosques" class="tab-page active">
+          
+          <!-- Search Box -->
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" class="search-input" placeholder="মসজিদের নাম বা এলাকা লিখুন...">
+          </div>
+
+          <!-- Division Filter Chips -->
+          <div class="filter-scroll-row">
+            <button class="filter-chip active" data-division="All">সব বিভাগ</button>
+            <button class="filter-chip" data-division="Dhaka">ঢাকা</button>
+            <button class="filter-chip" data-division="Chittagong">চট্টগ্রাম</button>
+            <button class="filter-chip" data-division="Sylhet">সিলেট</button>
+            <button class="filter-chip" data-division="Rajshahi">রাজশাহী</button>
+            <button class="filter-chip" data-division="Khulna">খুলনা</button>
+            <button class="filter-chip" data-division="Barisal">বরিশাল</button>
+            <button class="filter-chip" data-division="Rangpur">রংপুর</button>
+            <button class="filter-chip" data-division="Mymensingh">ময়মনসিংহ</button>
+          </div>
+
+          <!-- Action Banner -->
+          <div class="action-banner">
+            <div class="banner-content">
+              <h3>📍 কাছের মসজিদ খুঁজুন</h3>
+              <p>আপনার জিপিএস দূরত্বের ভিত্তিতে সাজান</p>
+            </div>
+            <button id="btn-get-gps" class="btn-gps">
+              <span>🧭</span> জিপিএস চালু করুন
+            </button>
+          </div>
+
+          <!-- Add Mosque Button -->
+          <div style="margin-bottom: 14px;">
+            <button onclick="openAddMosqueModal()" style="width: 100%; background: rgba(16, 185, 129, 0.15); border: 1px dashed rgba(52, 211, 153, 0.5); color: var(--emerald-light); padding: 10px; border-radius: 12px; font-weight: 700; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              ➕ নতুন মসজিদ বা সময়সূচি যোগ করুন
+            </button>
+          </div>
+
+          <!-- Mosque Cards List -->
+          <div id="mosques-list-container">
+            <!-- Rendered dynamically by app.js -->
+          </div>
+        </section>
+
+        <!-- 2. PRAYER TIMES TAB -->
+        <section id="tab-prayers" class="tab-page">
+          <div class="prayer-hero-card">
+            <p id="prayer-hijri-date" class="prayer-date-bn">হিজরি তারিখ লোড হচ্ছে...</p>
+            <p id="prayer-greg-date" class="prayer-date-greg">তারিখ</p>
+            
+            <span class="next-prayer-badge">পরবর্তী ওয়াক্ত</span>
+            <h2 id="next-prayer-name" class="next-prayer-title">ফজর (Fajr)</h2>
+            <p id="prayer-countdown" class="next-prayer-countdown">বাকি আছে: গণনা চলছে...</p>
+          </div>
+
+          <div class="prayer-table-card">
+            <div class="prayer-row">
+              <div class="prayer-row-left">
+                <span style="font-size: 18px;">🌅</span>
+                <div>
+                  <div class="prayer-row-name-bn">ফজর</div>
+                  <div class="prayer-row-name-en">Fajr</div>
+                </div>
+              </div>
+              <div class="prayer-row-time">০৫:০৫ AM</div>
+            </div>
+
+            <div class="prayer-row">
+              <div class="prayer-row-left">
+                <span style="font-size: 18px;">☀️</span>
+                <div>
+                  <div class="prayer-row-name-bn">যোহর</div>
+                  <div class="prayer-row-name-en">Dhuhr</div>
+                </div>
+              </div>
+              <div class="prayer-row-time">০১:১৫ PM</div>
+            </div>
+
+            <div class="prayer-row">
+              <div class="prayer-row-left">
+                <span style="font-size: 18px;">🌤️</span>
+                <div>
+                  <div class="prayer-row-name-bn">আসর</div>
+                  <div class="prayer-row-name-en">Asr</div>
+                </div>
+              </div>
+              <div class="prayer-row-time">০৪:২৫ PM</div>
+            </div>
+
+            <div class="prayer-row">
+              <div class="prayer-row-left">
+                <span style="font-size: 18px;">🌇</span>
+                <div>
+                  <div class="prayer-row-name-bn">মাগরিব</div>
+                  <div class="prayer-row-name-en">Maghrib</div>
+                </div>
+              </div>
+              <div class="prayer-row-time">০৬:০৬ PM</div>
+            </div>
+
+            <div class="prayer-row">
+              <div class="prayer-row-left">
+                <span style="font-size: 18px;">🌙</span>
+                <div>
+                  <div class="prayer-row-name-bn">ইশা</div>
+                  <div class="prayer-row-name-en">Isha</div>
+                </div>
+              </div>
+              <div class="prayer-row-time">০৭:৪৫ PM</div>
+            </div>
+
+            <div class="prayer-row" style="background: rgba(245, 158, 11, 0.1);">
+              <div class="prayer-row-left">
+                <span style="font-size: 18px;">🕌</span>
+                <div>
+                  <div class="prayer-row-name-bn">জুম্মা (শুক্রবার)</div>
+                  <div class="prayer-row-name-en">Jummah</div>
+                </div>
+              </div>
+              <div class="prayer-row-time">০১:৩০ PM</div>
+            </div>
+          </div>
+
+          <button onclick="playSoftChime()" style="width: 100%; background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(16, 185, 129, 0.2)); border: 1px solid var(--gold-primary); color: var(--gold-light); padding: 12px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            🔔 নামাজের মধুর ধ্বনি শুনুন (Audio Chime)
+          </button>
+
+          <div style="margin-top: 16px; padding: 14px; background: rgba(0,0,0,0.25); border-radius: 14px; border-left: 3px solid var(--gold-primary);">
+            <p style="font-size: 13px; color: var(--gold-light); font-weight: 600; line-height: 1.5;">"নিশ্চয়ই নামাজ মুমিনদের ওপর নির্দিষ্ট সময়ে আবশ্যক করা হয়েছে।"</p>
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">— সূরা আন-নিসা: ১০৩</p>
+          </div>
+        </section>
+
+        <!-- 3. QIBLA COMPASS TAB -->
+        <section id="tab-qibla" class="tab-page">
+          <div class="qibla-container">
+            <h2 style="font-size: 20px; font-weight: 800; color: var(--gold-light);">ক্বিবলা কম্পাস</h2>
+            <p style="font-size: 12px; color: var(--text-muted);">পবিত্র কাবা শরীফের সঠিক দিক নির্দেশনা</p>
+
+            <div class="compass-dial-wrap">
+              <div id="compass-dial" class="compass-dial-outer">
+                <span class="kaaba-icon-pin">🕋</span>
+                <div class="compass-needle"></div>
+              </div>
+            </div>
+
+            <div id="compass-degrees" class="qibla-degrees-badge">২৬৮°</div>
+            <p id="compass-status" class="qibla-direction-text">ফোনটি সোজা রাখুন এবং কাবা শরীফের দিকে মুখ করুন</p>
+            <p style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 14px;">(বাংলাদেশ থেকে ক্বিবলার কোণ প্রায় ২৬৮° পশ্চিম-উত্তর-পশ্চিম)</p>
+          </div>
+        </section>
+
+        <!-- 4. TASBIH TAB -->
+        <section id="tab-tasbih" class="tab-page">
+          <div class="tasbih-container">
+            <div id="tasbih-dhikr-ar" class="tasbih-dhikr-badge">سُبْحَانَ اللَّهِ</div>
+            <div id="tasbih-dhikr-tr" class="tasbih-dhikr-trans">সুবহানাল্লাহ (আল্লাহ অতি পবিত্র)</div>
+
+            <div id="tasbih-bead-btn" class="tasbih-circle-btn">
+              <div id="tasbih-count" class="tasbih-count-num">০</div>
+              <div id="tasbih-target" class="tasbih-target-label">লক্ষ্য: ০/৩৩</div>
+            </div>
+
+            <div class="tasbih-controls-row">
+              <button onclick="nextDhikr()" class="btn-tasbih-tool">🔄 জিকির পরিবর্তন</button>
+              <button onclick="toggleTasbihTarget()" class="btn-tasbih-tool">🎯 ৩৩ / ১০০</button>
+              <button onclick="resetTasbih()" class="btn-tasbih-tool">🔁 রিসেট</button>
+            </div>
+            
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 20px;">📱 প্রতিটি গণনায় মোবাইলে মৃদু ভাইব্রেশন হবে</p>
+          </div>
+        </section>
+
+      </main>
+
+      <!-- Bottom Navigation Bar -->
+      <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="mosques">
+          <span class="nav-icon" style="font-size: 18px;">🕌</span>
+          <span class="nav-label">মসজিদ</span>
+        </button>
+        <button class="nav-item" data-tab="prayers">
+          <span class="nav-icon" style="font-size: 18px;">⏰</span>
+          <span class="nav-label">নামাজ</span>
+        </button>
+        <button class="nav-item" data-tab="qibla">
+          <span class="nav-icon" style="font-size: 18px;">🧭</span>
+          <span class="nav-label">ক্বিবলা</span>
+        </button>
+        <button class="nav-item" data-tab="tasbih">
+          <span class="nav-icon" style="font-size: 18px;">📿</span>
+          <span class="nav-label">তাসবীহ</span>
+        </button>
+      </nav>
+
+    </div>
+
+    <!-- ==================== MODALS ==================== -->
+
+    <!-- Mosque Details Modal -->
+    <div id="details-modal" class="modal-overlay hidden">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h2>মসজিদ ও জামাত সময়সূচি</h2>
+          <button onclick="closeDetailsModal()" class="btn-close-modal">✕</button>
+        </div>
+        <div id="details-modal-body"></div>
+      </div>
+    </div>
+
+    <!-- Add Mosque Modal -->
+    <div id="add-modal" class="modal-overlay hidden">
+      <div class="modal-sheet">
+        <div class="modal-header">
+          <h2>নতুন মসজিদ যোগ করুন</h2>
+          <button onclick="closeAddModal()" class="btn-close-modal">✕</button>
+        </div>
+        <form onsubmit="submitNewMosque(event)">
+          <div class="form-group">
+            <label>মসজিদের নাম (বাংলা)*</label>
+            <input type="text" id="add-name-bn" class="form-control" required placeholder="যেমন: বাইতুল ফালাহ জামে মসজিদ">
+          </div>
+          <div class="form-group">
+            <label>মসজিদের নাম (English)</label>
+            <input type="text" id="add-name-en" class="form-control" placeholder="e.g. Baitul Falah Jame Mosque">
+          </div>
+          <div class="form-group">
+            <label>বিভাগ*</label>
+            <select id="add-division" class="form-control">
+              <option value="Dhaka">ঢাকা (Dhaka)</option>
+              <option value="Chittagong">চট্টগ্রাম (Chittagong)</option>
+              <option value="Sylhet">সিলেট (Sylhet)</option>
+              <option value="Rajshahi">রাজশাহী (Rajshahi)</option>
+              <option value="Khulna">খুলনা (Khulna)</option>
+              <option value="Barisal">বরিশাল (Barisal)</option>
+              <option value="Rangpur">রংপুর (Rangpur)</option>
+              <option value="Mymensingh">ময়মনসিংহ (Mymensingh)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>ঠিকানা ও এলাকা*</label>
+            <input type="text" id="add-address" class="form-control" required placeholder="রাস্তা, এলাকা, থানা">
+          </div>
+          <div class="form-group">
+            <label>মোবাইল / যোগাযোগ</label>
+            <input type="text" id="add-contact" class="form-control" placeholder="+880 1XXXXXXXXX">
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;">
+            <div class="form-group">
+              <label>ফজর সময়</label>
+              <input type="text" id="add-fajr" class="form-control" value="05:10 AM">
+            </div>
+            <div class="form-group">
+              <label>যোহর সময়</label>
+              <input type="text" id="add-dhuhr" class="form-control" value="01:15 PM">
+            </div>
+            <div class="form-group">
+              <label>আসর সময়</label>
+              <input type="text" id="add-asr" class="form-control" value="04:25 PM">
+            </div>
+            <div class="form-group">
+              <label>মাগরিব সময়</label>
+              <input type="text" id="add-maghrib" class="form-control" value="06:06 PM">
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+              <label>ইশা সময়</label>
+              <input type="text" id="add-isha" class="form-control" value="07:45 PM">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-submit-form">✓ মসজিদ সংরক্ষণ করুন</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Core App Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
