@@ -463,41 +463,41 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
       </div>
 
       {/* Admin Navigation Tabs */}
-      <div className="flex items-center gap-2 bg-slate-200/80 p-1 rounded-xl">
+      <div className="grid grid-cols-3 gap-1 sm:gap-2 bg-slate-200/80 p-1 rounded-xl w-full">
         <button
           onClick={() => switchTab('ocr')}
-          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+          className={`py-2 px-1.5 sm:px-3 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition-all text-center ${
             activeTab === 'ocr'
               ? 'bg-emerald-900 text-white shadow-sm'
               : 'text-slate-700 hover:text-slate-900'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-          <span>{lang === 'bn' ? 'এআই ওসিআর ও সময়সূচি' : 'AI OCR Timetable Studio'}</span>
+          <Sparkles className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+          <span className="truncate">{lang === 'bn' ? 'ওসিআর সময়সূচি' : 'OCR Timetable'}</span>
         </button>
 
         <button
           onClick={() => switchTab('add')}
-          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+          className={`py-2 px-1.5 sm:px-3 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition-all text-center ${
             activeTab === 'add'
               ? 'bg-emerald-900 text-white shadow-sm'
               : 'text-slate-700 hover:text-slate-900'
           }`}
         >
-          <Plus className="w-3.5 h-3.5 text-emerald-300" />
-          <span>{lang === 'bn' ? 'নতুন মসজিদ যোগ করুন' : 'Add Mosque'}</span>
+          <Plus className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />
+          <span className="truncate">{lang === 'bn' ? 'নতুন মসজিদ' : 'Add Mosque'}</span>
         </button>
 
         <button
           onClick={() => switchTab('list')}
-          className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
+          className={`py-2 px-1.5 sm:px-3 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition-all text-center ${
             activeTab === 'list'
               ? 'bg-emerald-900 text-white shadow-sm'
               : 'text-slate-700 hover:text-slate-900'
           }`}
         >
-          <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-          <span>{lang === 'bn' ? 'মসজিদ মুছুন ও তালিকা' : 'Manage & Remove Mosques'} ({mosques.length})</span>
+          <Trash2 className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+          <span className="truncate">{lang === 'bn' ? 'মসজিদ মুছুন' : 'Remove'} ({mosques.length})</span>
         </button>
       </div>
 

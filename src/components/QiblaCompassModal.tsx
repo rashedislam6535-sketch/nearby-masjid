@@ -49,24 +49,24 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
   const compassRotation = deviceHeading !== null ? (qibla.degrees - deviceHeading + 360) % 360 : qibla.degrees;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-gradient-to-b from-emerald-950 via-slate-900 to-emerald-950 text-white rounded-3xl overflow-hidden w-full max-w-md shadow-2xl border border-emerald-700/60 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden">
+      <div className="bg-gradient-to-b from-emerald-950 via-slate-900 to-emerald-950 text-white rounded-3xl overflow-hidden w-full max-w-md max-h-[94vh] shadow-2xl border border-emerald-700/60 relative flex flex-col">
         {/* Glow ambient background circles */}
         <div className="absolute top-0 right-0 w-48 h-48 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 flex items-center justify-between border-b border-emerald-800/60 relative z-10">
+        <div className="p-3.5 sm:p-4 flex items-center justify-between border-b border-emerald-800/60 relative z-10 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-amber-500 text-emerald-950 flex items-center justify-center font-bold shadow-md shadow-amber-500/20">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-amber-500 text-emerald-950 flex items-center justify-center font-bold shadow-md shadow-amber-500/20">
               <Compass className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold font-serif text-lg leading-tight text-white flex items-center gap-1.5">
+              <h3 className="font-bold font-serif text-base sm:text-lg leading-tight text-white flex items-center gap-1.5">
                 <span>{lang === 'bn' ? 'কিবলা কম্পাস' : 'Qibla Direction Compass'}</span>
                 <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               </h3>
-              <p className="text-xs text-emerald-300">
+              <p className="text-[11px] sm:text-xs text-emerald-300">
                 {lang === 'bn' ? 'পবিত্র কা\'বা শরীফের সঠিক দিক' : 'Precise direction toward holy Kaaba'}
               </p>
             </div>
@@ -74,22 +74,22 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
 
           <button
             onClick={onClose}
-            className="w-9 h-9 rounded-full bg-emerald-900/80 hover:bg-emerald-800 text-slate-300 hover:text-white flex items-center justify-center transition-colors border border-emerald-700/50"
+            className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-emerald-900/80 hover:bg-emerald-800 text-slate-300 hover:text-white flex items-center justify-center transition-colors border border-emerald-700/50"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 text-center space-y-6 relative z-10">
+        <div className="p-4 sm:p-5 text-center space-y-4 sm:space-y-5 relative z-10 flex-1 overflow-y-auto overscroll-contain">
           {/* Current location chip */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-900/70 text-emerald-200 rounded-full text-xs border border-emerald-700/50">
             <MapPin className="w-3 h-3 text-amber-400" />
-            <span className="font-medium truncate max-w-[240px]">{userLocation.area}</span>
+            <span className="font-medium truncate max-w-[220px]">{userLocation.area}</span>
           </div>
 
           {/* Compass Dial Graphic */}
-          <div className="relative w-64 h-64 mx-auto flex items-center justify-center">
+          <div className="relative w-56 h-56 sm:w-64 sm:h-64 mx-auto flex items-center justify-center">
             {/* Outer Ring with degree markings */}
             <div className="absolute inset-0 rounded-full border-4 border-emerald-700/40 shadow-inner flex items-center justify-center">
               {/* Compass Cardinal Points */}
@@ -100,7 +100,7 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
             </div>
 
             {/* Inner Ring with Subtle Golden Radial Pattern */}
-            <div className="w-48 h-48 rounded-full border border-amber-400/30 bg-emerald-900/30 flex items-center justify-center shadow-lg relative">
+            <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-full border border-amber-400/30 bg-emerald-900/30 flex items-center justify-center shadow-lg relative">
               
               {/* Rotating Pointer Container */}
               <div 
@@ -109,19 +109,19 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
               >
                 {/* Kaaba Direction Marker on the ring */}
                 <div className="absolute -top-3 flex flex-col items-center">
-                  <div className="w-8 h-8 rounded-lg bg-amber-400 text-emerald-950 flex items-center justify-center font-bold text-sm shadow-md ring-2 ring-amber-300">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-400 text-emerald-950 flex items-center justify-center font-bold text-xs sm:text-sm shadow-md ring-2 ring-amber-300">
                     🕋
                   </div>
-                  <div className="w-0.5 h-16 bg-gradient-to-b from-amber-400 to-transparent mt-1" />
+                  <div className="w-0.5 h-12 sm:h-16 bg-gradient-to-b from-amber-400 to-transparent mt-1" />
                 </div>
               </div>
 
               {/* Center Pivot Point */}
-              <div className="w-14 h-14 rounded-full bg-emerald-950 border-2 border-amber-400 flex flex-col items-center justify-center shadow-md">
-                <span className="text-[10px] text-amber-300 font-bold uppercase tracking-wider">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-emerald-950 border-2 border-amber-400 flex flex-col items-center justify-center shadow-md">
+                <span className="text-[9px] sm:text-[10px] text-amber-300 font-bold uppercase tracking-wider">
                   {qibla.compassDirection}
                 </span>
-                <span className="text-xs font-black text-white font-mono leading-none">
+                <span className="text-xs sm:text-sm font-black text-white font-mono leading-none">
                   {qibla.degrees}°
                 </span>
               </div>
@@ -166,7 +166,7 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 bg-emerald-950/90 border-t border-emerald-800/60 flex items-center justify-between">
+        <div className="p-3.5 sm:p-4 bg-emerald-950/90 border-t border-emerald-800/60 flex items-center justify-between flex-shrink-0">
           <button
             onClick={() => {
               if (navigator.clipboard) {

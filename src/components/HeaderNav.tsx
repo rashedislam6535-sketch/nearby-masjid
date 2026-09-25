@@ -14,36 +14,36 @@ interface HeaderNavProps {
 
 export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang, expiredCount = 0 }: HeaderNavProps) {
   return (
-    <header className="sticky top-0 z-40 bg-emerald-950/95 backdrop-blur-md border-b border-emerald-800/50 shadow-md">
-      <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
+    <header className="sticky top-0 z-40 bg-emerald-950/95 backdrop-blur-md border-b border-emerald-800/50 shadow-md w-full">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 w-full">
         {/* App Logo & Name */}
         <div 
           onClick={() => setActiveTab('list')}
-          className="flex items-center gap-2.5 cursor-pointer group"
+          className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group min-w-0"
         >
-          <div className="w-10 h-10 rounded-xl overflow-hidden shadow-sm shadow-amber-500/20 flex items-center justify-center border border-amber-400/40">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden shadow-sm shadow-amber-500/20 flex-shrink-0 flex items-center justify-center border border-amber-400/40">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="Nearby Masjid Logo" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-lg tracking-tight text-white font-serif">
+              <span className="font-bold text-base sm:text-lg tracking-tight text-white font-serif truncate">
                 Nearby Masjid
               </span>
-              <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 flex-shrink-0">
                 BD
               </span>
             </div>
-            <p className="text-xs text-emerald-300/80 -mt-0.5">
+            <p className="text-[11px] sm:text-xs text-emerald-300/80 -mt-0.5 truncate hidden sm:block">
               {lang === 'bn' ? 'কাছের মসজিদ ও নামাজের সময়সূচি' : 'Mosque Finder & Prayer Timetable'}
             </p>
           </div>
         </div>
 
         {/* View Switcher & Language Toggle */}
-        <div className="flex items-center gap-2">
-          {/* Navigation Pill */}
-          <nav className="flex items-center bg-emerald-900/80 rounded-xl p-1 border border-emerald-700/50">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          {/* Navigation Pill - Visible on desktop/tablet, mobile uses BottomNavBar */}
+          <nav className="hidden sm:flex items-center bg-emerald-900/80 rounded-xl p-1 border border-emerald-700/50">
             <button
               onClick={() => setActiveTab('list')}
               className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
@@ -87,15 +87,15 @@ export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang,
             </button>
           </nav>
 
-          {/* Qibla Compass Trigger Button */}
+          {/* Qibla Compass Trigger Button - Desktop only, mobile has Qibla in BottomNavBar */}
           {onOpenQibla && (
             <button
               onClick={onOpenQibla}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all active:scale-95 shadow-sm"
+              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all active:scale-95 shadow-sm"
               title={lang === 'bn' ? 'কিবলা কম্পাস দেখুন' : 'Open Qibla Compass'}
             >
               <span>🕋</span>
-              <span className="hidden sm:inline font-bold">{lang === 'bn' ? 'কিবলা' : 'Qibla'}</span>
+              <span className="font-bold">{lang === 'bn' ? 'কিবলা' : 'Qibla'}</span>
             </button>
           )}
 

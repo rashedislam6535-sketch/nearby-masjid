@@ -48,11 +48,11 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-      <div className="bg-white rounded-3xl overflow-hidden w-full max-w-xl shadow-2xl border border-slate-200/80 my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-sm overflow-hidden">
+      <div className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden w-full max-w-xl max-h-[92vh] sm:max-h-[88vh] shadow-2xl border border-slate-200/80 flex flex-col animate-in fade-in zoom-in-95 duration-200">
         
         {/* Cover Image & Header */}
-        <div className="relative h-56 sm:h-64 w-full bg-emerald-950">
+        <div className="relative h-44 sm:h-52 w-full bg-emerald-950 flex-shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={mosque.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80'}
@@ -102,7 +102,7 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
         </div>
 
         {/* Modal Content */}
-        <div className="p-5 space-y-5 max-h-[70vh] overflow-y-auto">
+        <div className="p-4 sm:p-5 space-y-4 sm:space-y-5 flex-1 overflow-y-auto overscroll-contain">
           
           {/* Quick Contact & Navigation Actions */}
           <div className="flex items-center gap-2">
@@ -318,7 +318,7 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+        <div className="p-3.5 sm:p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
           <button
             onClick={onClose}
             className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold transition-colors"

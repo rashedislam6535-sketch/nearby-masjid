@@ -141,7 +141,7 @@ export default function NearbyMasjidApp() {
   const activeMosquePrayer = displayedMosques[0]?.prayer || mosques[0]?.prayer;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-amber-400 selection:text-emerald-950">
+    <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-amber-400 selection:text-emerald-950 overflow-x-hidden w-full max-w-full">
       {/* Top Header Navigation */}
       <HeaderNav
         activeTab={activeTab}
