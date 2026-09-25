@@ -177,14 +177,13 @@ function checkConnectivityAndLaunch() {
   const statusEl = document.getElementById('splash-status');
   if (statusEl) statusEl.textContent = 'নেটওয়ার্ক যাচাই করা হচ্ছে...';
 
-  // If online, prepare cloud webview or offer launch
+  // If online, navigate directly to live app or allow offline fallback
   if (navigator.onLine) {
     if (statusEl) statusEl.textContent = 'অনলাইনে সংযুক্ত। অ্যাপ চালু হচ্ছে...';
     setTimeout(() => {
-      // Auto-load live app if preferred
       const preferredMode = localStorage.getItem('nm_pref_mode') || 'online';
       if (preferredMode === 'online') {
-        launchOnlineView();
+        launchOnlineDirect();
       } else {
         launchOfflineView();
       }
@@ -197,23 +196,33 @@ function checkConnectivityAndLaunch() {
   }
 }
 
-function launchOnlineView() {
+window.launchOnlineDirect = function () {
+  const statusEl = document.getElementById('splash-status');
+  if (statusEl) statusEl.textContent = 'লাইভ ক্লাউড অ্যাপে প্রবেশ করা হচ্ছে...';
+  localStorage.setItem('nm_pref_mode', 'online');
+  // Direct top-level navigation eliminates iframe sandbox and ERR_BLOCKED_BY_RESPONSE
+  window.location.href = CLOUD_APP_URL;
+};
+
+window.launchOnlineView = function () {
   const splash = document.getElementById('splash-screen');
   const onlineView = document.getElementById('online-view');
   const offlineView = document.getElementById('offline-view');
   const iframe = document.getElementById('online-iframe');
 
-  if (iframe && !iframe.src) {
-    iframe.src = CLOUD_APP_URL;
+  if (iframe) {
+    if (!iframe.src) {
+      iframe.src = CLOUD_APP_URL;
+    }
   }
 
   if (onlineView) onlineView.classList.remove('hidden');
   if (offlineView) offlineView.classList.add('hidden');
   if (splash) splash.classList.add('hidden');
   localStorage.setItem('nm_pref_mode', 'online');
-}
+};
 
-function launchOfflineView() {
+window.launchOfflineView = function () {
   const splash = document.getElementById('splash-screen');
   const onlineView = document.getElementById('online-view');
   const offlineView = document.getElementById('offline-view');
@@ -222,7 +231,7 @@ function launchOfflineView() {
   if (offlineView) offlineView.classList.remove('hidden');
   if (splash) splash.classList.add('hidden');
   localStorage.setItem('nm_pref_mode', 'offline');
-}
+};
 
 // Storage Initialization
 function initStorage() {

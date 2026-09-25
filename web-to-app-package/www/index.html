@@ -37,7 +37,7 @@
       <p id="splash-status" class="splash-status-text">অ্যাপ লোড হচ্ছে...</p>
 
       <div class="splash-btn-row">
-        <button onclick="launchOnlineView()" class="btn-splash">🌐 লাইভ ক্লাউড অ্যাপ</button>
+        <button onclick="launchOnlineDirect()" class="btn-splash">🌐 লাইভ ক্লাউড অ্যাপ</button>
         <button onclick="launchOfflineView()" class="btn-splash btn-splash-secondary">📱 অফলাইন মোড</button>
       </div>
     </div>
@@ -50,8 +50,8 @@
           <span>কাছের মসজিদ (লাইভ)</span>
         </div>
         <div class="online-bar-actions">
-          <button onclick="document.getElementById('online-iframe').contentWindow.location.reload()" class="btn-icon-bar" title="রিলোড">
-            🔄 রিলোড
+          <button onclick="launchOnlineDirect()" class="btn-icon-bar" title="সরাসরি লাইভ অ্যাপ খুলুন">
+            🌐 সরাসরি যান
           </button>
           <button onclick="launchOfflineView()" class="btn-icon-bar" title="অফলাইনে যান">
             📱 অফলাইন
