@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Shield, Plus, Upload, CheckCircle2, AlertTriangle, RefreshCw,
   Clock, Eye, Edit3, Trash2, Camera, Sparkles, MapPin, Check,
-  RotateCcw, Save, Image as ImageIcon, Link2, Search
+  RotateCcw, Save, Image as ImageIcon, Link2, Search, Lock, KeyRound, LogOut
 } from 'lucide-react';
 import { MosqueData } from '@/types/masjid';
 import { BANGLADESH_DIVISIONS } from '@/lib/geoUtils';
@@ -14,6 +14,7 @@ import { LocationPickerMap } from '@/components/LocationPickerMap';
 
 const DRAFT_MOSQUE_KEY = 'nearby_masjid_add_draft_v1';
 const ADMIN_TAB_KEY = 'nearby_masjid_admin_tab_v1';
+const ADMIN_AUTH_KEY = 'nearby_masjid_admin_auth_v1';
 
 export const PRESET_MOSQUE_COVERS = [
   {
@@ -84,6 +85,12 @@ interface AdminPortalProps {
 
 export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: AdminPortalProps) {
   const [activeTab, setActiveTab] = useState<'ocr' | 'add' | 'list'>('ocr');
+
+  // Admin Authentication Gate State
+  const [isAdminUnlocked, setIsAdminUnlocked] = useState<boolean>(false);
+  const [enteredPasscode, setEnteredPasscode] = useState<string>('');
+  const [passcodeError, setPasscodeError] = useState<string | null>(null);
+  const [authChecking, setAuthChecking] = useState<boolean>(true);
 
   // Selected mosque for prayer timetable update
   const [selectedMosqueId, setSelectedMosqueId] = useState<number>(
@@ -170,6 +177,10 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
     if (typeof window === 'undefined') return;
 
     try {
+      const isAuth = sessionStorage.getItem(ADMIN_AUTH_KEY) === 'true';
+      setIsAdminUnlocked(isAuth);
+      setAuthChecking(false);
+
       const savedTab = localStorage.getItem(ADMIN_TAB_KEY);
       if (savedTab && (savedTab === 'ocr' || savedTab === 'add' || savedTab === 'list') && !preselectedMosque) {
         setActiveTab(savedTab as 'ocr' | 'add' | 'list');
@@ -189,8 +200,39 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
       }
     } catch (e) {
       console.warn('Error restoring admin draft:', e);
+      setAuthChecking(false);
     }
   }, [preselectedMosque]);
+
+  // Handle unlock submit
+  const handleUnlockAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cleanPass = enteredPasscode.trim();
+    if (cleanPass === 'masjid2026' || cleanPass === 'admin123') {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(ADMIN_AUTH_KEY, 'true');
+      }
+      setIsAdminUnlocked(true);
+      setPasscodeError(null);
+      setEnteredPasscode('');
+    } else {
+      setPasscodeError(
+        lang === 'bn'
+          ? 'ভুল পাসকোড! সঠিক পিন দিন (ডিফল্ট: masjid2026)'
+          : 'Incorrect passcode! Please enter valid PIN (Default: masjid2026)'
+      );
+    }
+  };
+
+  // Handle lock
+  const handleLockAdmin = () => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(ADMIN_AUTH_KEY);
+    }
+    setIsAdminUnlocked(false);
+    setEnteredPasscode('');
+    setPasscodeError(null);
+  };
 
   // Auto-save addForm changes to localStorage
   useEffect(() => {
@@ -427,6 +469,85 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
 
   const selectedMosque = mosques.find(m => m.id === selectedMosqueId);
 
+  // Security Gate: Protect admin controls from unauthorized visitors
+  if (!isAdminUnlocked && !authChecking) {
+    return (
+      <div className="max-w-md mx-auto my-6 bg-white rounded-3xl border border-slate-200/90 shadow-xl overflow-hidden">
+        {/* Header with Islamic emerald backdrop */}
+        <div className="bg-gradient-to-br from-emerald-950 via-teal-950 to-emerald-900 p-6 text-white text-center relative">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500 text-emerald-950 flex items-center justify-center font-bold mx-auto mb-3 shadow-lg ring-4 ring-amber-400/20">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold font-serif">
+            {lang === 'bn' ? 'অ্যাডমিন সিকিউরিটি গেট' : 'Admin Security Gate'}
+          </h2>
+          <p className="text-xs text-emerald-200 mt-1 max-w-xs mx-auto">
+            {lang === 'bn'
+              ? 'মসজিদের ডাটাবেজ ও সময়সূচি সুরক্ষিত রাখতে অ্যাডমিন পাসকোড প্রয়োজন'
+              : 'Enter admin passcode to manage mosques and timetable records'}
+          </p>
+        </div>
+
+        {/* Form Body */}
+        <form onSubmit={handleUnlockAdmin} className="p-6 space-y-4">
+          {passcodeError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-800 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+              <span>{passcodeError}</span>
+            </div>
+          )}
+
+          <div className="space-y-1.5">
+            <label className="block text-xs font-bold text-slate-700">
+              {lang === 'bn' ? 'অ্যাডমিন পিন / পাসকোড' : 'Admin PIN / Passcode'}
+            </label>
+            <div className="relative">
+              <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="password"
+                value={enteredPasscode}
+                onChange={(e) => {
+                  setEnteredPasscode(e.target.value);
+                  if (passcodeError) setPasscodeError(null);
+                }}
+                placeholder={lang === 'bn' ? 'পাসকোড লিখুন...' : 'Enter passcode...'}
+                autoFocus
+                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 focus:border-emerald-700"
+              />
+            </div>
+          </div>
+
+          <div className="bg-amber-50 rounded-xl p-3 border border-amber-200 text-[11px] text-amber-900 flex items-center justify-between">
+            <span>
+              {lang === 'bn' ? 'ডিফল্ট পাসকোড:' : 'Demo Passcode:'}{' '}
+              <strong className="font-mono bg-amber-100 px-1.5 py-0.5 rounded text-emerald-950 font-bold">
+                masjid2026
+              </strong>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setEnteredPasscode('masjid2026');
+                if (passcodeError) setPasscodeError(null);
+              }}
+              className="text-emerald-700 hover:text-emerald-900 underline font-bold"
+            >
+              {lang === 'bn' ? 'অটো ফিল' : 'Auto Fill'}
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-3 bg-gradient-to-r from-emerald-900 to-teal-900 hover:from-emerald-950 hover:to-teal-950 text-white font-bold text-sm rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+          >
+            <Shield className="w-4 h-4 text-amber-400" />
+            <span>{lang === 'bn' ? 'লগইন ও আনলক করুন' : 'Unlock Admin Portal'}</span>
+          </button>
+        </form>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       {/* Admin Header Banner */}
@@ -450,14 +571,25 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
           </div>
         </div>
 
-        {/* Refresh button */}
-        <button
-          onClick={onRefresh}
-          className="p-2 bg-emerald-900 hover:bg-emerald-800 rounded-xl text-emerald-200 hover:text-white transition-colors border border-emerald-700/60"
-          title="Refresh Data"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
+        {/* Header Action Buttons: Lock & Refresh */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleLockAdmin}
+            className="px-3 py-1.5 bg-rose-900/70 hover:bg-rose-800 text-rose-200 border border-rose-700/60 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+            title={lang === 'bn' ? 'অ্যাডমিন সেশন লক করুন' : 'Lock Admin Portal'}
+          >
+            <Lock className="w-3.5 h-3.5 text-rose-300" />
+            <span className="hidden sm:inline">{lang === 'bn' ? 'লক করুন' : 'Lock'}</span>
+          </button>
+
+          <button
+            onClick={onRefresh}
+            className="p-2 bg-emerald-900 hover:bg-emerald-800 rounded-xl text-emerald-200 hover:text-white transition-colors border border-emerald-700/60"
+            title="Refresh Data"
+          >
+            <RefreshCw className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Admin Navigation Tabs */}

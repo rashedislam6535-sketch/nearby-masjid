@@ -341,9 +341,39 @@ export default function NearbyMasjidApp() {
 
             {/* Mosque Cards Grid */}
             {loading ? (
-              <div className="py-12 text-center text-slate-500 text-sm flex flex-col items-center justify-center gap-2">
-                <div className="w-8 h-8 border-3 border-emerald-800 border-t-transparent rounded-full animate-spin" />
-                <span>Loading mosques from database...</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-sm animate-pulse flex flex-col">
+                    <div className="h-44 w-full bg-slate-200 relative">
+                      <div className="absolute top-3 left-3 w-28 h-6 bg-slate-300 rounded-full" />
+                      <div className="absolute top-3 right-3 w-20 h-6 bg-slate-300 rounded-full" />
+                      <div className="absolute bottom-3 left-3 right-16 space-y-2">
+                        <div className="h-5 bg-slate-300 rounded w-3/4" />
+                        <div className="h-3 bg-slate-300 rounded w-1/2" />
+                      </div>
+                    </div>
+                    <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                      <div className="bg-slate-100 rounded-xl p-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-9 h-9 rounded-xl bg-slate-200" />
+                          <div className="space-y-1.5">
+                            <div className="w-16 h-2.5 bg-slate-200 rounded" />
+                            <div className="w-24 h-4 bg-slate-200 rounded" />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <div className="w-16 h-5 bg-slate-200 rounded ml-auto" />
+                          <div className="w-12 h-2.5 bg-slate-200 rounded ml-auto" />
+                        </div>
+                      </div>
+                      <div className="h-7 bg-slate-100 rounded-xl" />
+                      <div className="flex items-center gap-2 pt-1">
+                        <div className="h-10 bg-slate-200 rounded-xl flex-1" />
+                        <div className="h-10 bg-slate-100 rounded-xl w-24" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : displayedMosques.length === 0 ? (
               <div className="py-16 text-center bg-white rounded-3xl border border-slate-200 p-8 space-y-3">

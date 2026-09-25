@@ -2,9 +2,10 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { MapPin, Navigation, Clock, AlertTriangle, CheckCircle, ChevronRight, Phone } from 'lucide-react';
+import { MapPin, Navigation, Clock, AlertTriangle, CheckCircle, ChevronRight, Phone, Compass } from 'lucide-react';
 import { MosqueData } from '@/types/masjid';
 import { calculatePrayerCountdown, checkTimetableValidity } from '@/lib/prayerTracker';
+import { calculateQiblaBearing } from '@/lib/geoUtils';
 
 interface MosqueCardProps {
   mosque: MosqueData;
@@ -30,6 +31,7 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
 
   const tracking = calculatePrayerCountdown(prayer);
   const validity = checkTimetableValidity(prayer.updated_date, prayer.next_update_date);
+  const qibla = calculateQiblaBearing(mosque.latitude, mosque.longitude);
 
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${mosque.latitude},${mosque.longitude}`;
 
@@ -122,6 +124,20 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
             <span>{validity.message}</span>
           </div>
         )}
+
+        {/* Qibla Direction Information Chip */}
+        <div className="flex items-center justify-between text-[11px] px-2.5 py-1.5 bg-slate-50 border border-slate-200/90 rounded-xl text-slate-700">
+          <div className="flex items-center gap-1.5 font-medium text-emerald-950">
+            <Compass className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
+            <span>{lang === 'bn' ? 'কিবলা দিক:' : 'Qibla:'}</span>
+            <span className="font-bold text-slate-900 font-mono">
+              {qibla.degrees}° {qibla.compassDirection}
+            </span>
+          </div>
+          <span className="text-[10px] text-slate-500 font-medium">
+            {lang === 'bn' ? 'মক্কার কা\'বা অভিমুখে' : 'Toward Makkah'}
+          </span>
+        </div>
 
         {/* Action Buttons: View Details & Google Maps */}
         <div className="pt-1 flex items-center gap-2">

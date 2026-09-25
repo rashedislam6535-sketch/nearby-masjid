@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, MapPin, Navigation, Phone, Clock, AlertTriangle, CheckCircle, Calendar, Share2, ZoomIn, Trash2 } from 'lucide-react';
+import { X, MapPin, Navigation, Phone, Clock, AlertTriangle, CheckCircle, Calendar, Share2, ZoomIn, Trash2, Compass } from 'lucide-react';
 import { MosqueData } from '@/types/masjid';
 import { checkTimetableValidity, calculatePrayerCountdown } from '@/lib/prayerTracker';
+import { calculateQiblaBearing } from '@/lib/geoUtils';
 
 interface MosqueDetailsModalProps {
   mosque: MosqueData | null;
@@ -34,6 +35,7 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
 
   const validity = checkTimetableValidity(prayer.updated_date, prayer.next_update_date);
   const tracking = calculatePrayerCountdown(prayer);
+  const qibla = calculateQiblaBearing(mosque.latitude, mosque.longitude);
 
   const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${mosque.latitude},${mosque.longitude}`;
 
@@ -132,6 +134,34 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
               <Share2 className="w-4 h-4" />
               {copySuccess && <span className="text-[10px] ml-1 text-emerald-600 font-bold">Copied!</span>}
             </button>
+          </div>
+
+          {/* Qibla Direction & Kaaba Bearing Banner */}
+          <div className="bg-gradient-to-r from-emerald-950 via-teal-950 to-emerald-900 text-white rounded-2xl p-4 shadow-sm border border-emerald-800 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-emerald-950 flex items-center justify-center font-bold shadow-md flex-shrink-0">
+                <Compass className="w-6 h-6 text-emerald-950" style={{ transform: `rotate(${qibla.degrees}deg)` }} />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                  {lang === 'bn' ? 'কিবলার দিকনির্দেশ (মক্কার কা\'বা)' : 'Qibla Bearing (Kaaba Direction)'}
+                </h4>
+                <p className="text-sm font-bold mt-0.5 text-white">
+                  {qibla.degrees}° {qibla.compassDirection} {lang === 'bn' ? '(পশ্চিম কোণ)' : '(West-Northwest)'}
+                </p>
+              </div>
+            </div>
+
+            <div className="text-right">
+              <span className="text-[10px] font-bold bg-emerald-800/80 text-emerald-200 px-2.5 py-1 rounded-full border border-emerald-600/40">
+                {lang === 'bn' ? 'সঠিক কম্পাস' : 'True Bearing'}
+              </span>
+              {mosque.distance_text && (
+                <p className="text-[11px] text-emerald-300/80 mt-1">
+                  {lang === 'bn' ? 'দূরত্ব:' : 'Dist:'} {mosque.distance_text}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* 15-Day Timetable Validity Banner (Explicit Requirement) */}

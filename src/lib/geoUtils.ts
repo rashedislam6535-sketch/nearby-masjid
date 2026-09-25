@@ -164,3 +164,27 @@ export const BANGLADESH_DIVISIONS: Record<string, Record<string, string[]>> = {
     Bogra: ['Bogra Sadar', 'Sherpur', 'Shibganj', 'Gabtali']
   }
 };
+
+/**
+ * Calculate precise Qibla bearing from any coordinates on Earth towards the Kaaba in Makkah
+ * Kaaba Coordinates: 21.4225° N, 39.8262° E
+ */
+export function calculateQiblaBearing(lat: number, lng: number): { degrees: number; compassDirection: string } {
+  const kaabaLat = (21.4225 * Math.PI) / 180;
+  const kaabaLng = (39.8262 * Math.PI) / 180;
+  const phi = (lat * Math.PI) / 180;
+  const lambda = (lng * Math.PI) / 180;
+
+  const y = Math.sin(kaabaLng - lambda);
+  const x = Math.cos(phi) * Math.tan(kaabaLat) - Math.sin(phi) * Math.cos(kaabaLng - lambda);
+
+  let qibla = (Math.atan2(y, x) * 180) / Math.PI;
+  qibla = (qibla + 360) % 360;
+  const degrees = Math.round(qibla);
+
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+  const index = Math.round(qibla / 22.5) % 16;
+  const compassDirection = directions[index];
+
+  return { degrees, compassDirection };
+}
