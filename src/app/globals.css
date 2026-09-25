@@ -1,97 +1,88 @@
 @import "tailwindcss";
 
-/* Class-based dark mode (Tailwind v4 defaults to the OS media query otherwise) */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Leaflet map styles */
+@import "leaflet/dist/leaflet.css";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-}
-
-html {
-  color-scheme: light;
-}
-html.dark {
-  color-scheme: dark;
+@layer base {
+  :root {
+    --islamic-dark-green: #064e3b;
+    --islamic-forest: #022c22;
+    --islamic-gold: #d97706;
+    --islamic-gold-light: #fbbf24;
+    --islamic-cream: #fbfbf9;
+  }
 }
 
 body {
-  background-color: #fafafa;
-  color: #18181b;
-  font-family: var(--font-sans);
+  background-color: #f8faf9;
+  color: #0f172a;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  text-rendering: optimizeLegibility;
-}
-.dark body {
-  background-color: #09090b;
-  color: #f4f4f5;
 }
 
-::selection {
-  background: #c7d2fe;
-  color: #1e1b4b;
-}
-.dark ::selection {
-  background: #3730a3;
-  color: #e0e7ff;
-}
-
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #d4d4d8 transparent;
-}
-.dark * {
-  scrollbar-color: #3f3f46 transparent;
+/* Islamic Geometric & Pattern Accents */
+.islamic-pattern-bg {
+  background-color: #064e3b;
+  background-image: radial-gradient(#10b98125 1.5px, transparent 1.5px), radial-gradient(#fbbf2420 1.5px, #064e3b 1.5px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
 }
 
-input[type="number"]::-webkit-outer-spin-button,
-input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
+.gold-gradient {
+  background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #b45309 100%);
+}
+
+.green-gradient {
+  background: linear-gradient(135deg, #064e3b 0%, #042f2e 100%);
+}
+
+.card-gold-border {
+  border: 1px solid rgba(217, 119, 6, 0.25);
+}
+
+/* Custom pulse for running prayer */
+@keyframes prayer-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.02);
+  }
+}
+
+.animate-prayer-pulse {
+  animation: prayer-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom Leaflet Map styling */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  z-index: 10;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #10b98130;
+  padding: 0;
+  overflow: hidden;
+}
+
+.leaflet-popup-content {
   margin: 0;
-}
-input[type="number"] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-.dark input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(1) opacity(0.6);
+  line-height: 1.4;
 }
 
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Hide scrollbars for clean mobile appearance */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-.toast-in {
-  animation: toast-in 180ms ease-out both;
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-.fade-in {
-  animation: fade-in 150ms ease-out both;
-}
-
-@media print {
-  .no-print {
-    display: none !important;
-  }
-  body,
-  .dark body {
-    background: #fff !important;
-    color: #000 !important;
-  }
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

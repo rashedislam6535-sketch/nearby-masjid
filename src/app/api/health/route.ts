@@ -1,41 +1,35 @@
 import { NextResponse } from "next/server";
-import { db } from "@/db";
-import { sql } from "drizzle-orm";
-import { getMemoryStore } from "@/lib/dataStore";
+import { query } from "@/lib/dbClient";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const store = getMemoryStore();
   let dbStatus = "not_configured";
   let dbError: string | null = null;
+  let mosquesCount = 0;
+  let prayerTimesCount = 0;
 
-  if (process.env.DATABASE_URL) {
-    try {
-      await db.execute(sql`select 1`);
-      dbStatus = "connected";
-    } catch (err: any) {
-      dbStatus = "authentication_or_network_failed";
-      dbError = err.message || "Database connection error";
-    }
+  try {
+    const mRes = await query<{ count: string }>("SELECT COUNT(*) FROM mosques;");
+    const pRes = await query<{ count: string }>("SELECT COUNT(*) FROM prayer_times;");
+    mosquesCount = parseInt(mRes[0]?.count || '0', 10);
+    prayerTimesCount = parseInt(pRes[0]?.count || '0', 10);
+    dbStatus = "connected";
+  } catch (err) {
+    dbStatus = "error";
+    dbError = (err as Error).message;
   }
 
   return NextResponse.json({
-    ok: true,
-    status: dbStatus === "connected" ? "healthy" : "degraded_local_fallback",
+    ok: dbStatus === "connected",
+    app: "Nearby Masjid",
     database: {
       status: dbStatus,
-      configured: Boolean(process.env.DATABASE_URL),
       error: dbError,
+      mosques: mosquesCount,
+      prayer_timetables: prayerTimesCount
     },
-    localStore: {
-      active: true,
-      persistedToDisk: true,
-      usersCount: store.users.length,
-      activitiesCount: store.activities.length,
-      attendanceCount: store.attendance.length,
-      reportsCount: store.reports.length,
-    },
-    timestamp: new Date().toISOString(),
+    version: "1.0.0-production-bd",
+    timestamp: new Date().toISOString()
   });
 }

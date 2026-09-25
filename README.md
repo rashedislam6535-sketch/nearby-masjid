@@ -1,171 +1,79 @@
-# WorkPulse — daily work tracker
+# 🕌 Nearby Masjid — Bangladesh
 
-> 🌐 **Live Website Link:** [https://employee-performance-tracker-hazel.vercel.app](https://employee-performance-tracker-hazel.vercel.app)
+> A modern, production-ready mosque finder and prayer timetable management application built for Bangladesh with real GPS location detection, live prayer countdown, uploaded timetable image viewer, and AI OCR assistance.
 
-A personal work log that replaces the Google Sheet: log what you did each day (tickets, chats, KYC, calls, emails, training), see it on a dashboard / timeline / calendar, and generate weekly reports you can download as Word, Markdown or PDF.
-
-**Stack:** Next.js (App Router) · TypeScript · Tailwind CSS · PostgreSQL (Supabase / Neon / any Postgres) · Drizzle ORM
+![Nearby Masjid Preview](/public/images/charts/baitul_aman_chart.svg)
 
 ---
 
-## Deploy for free (recommended: Vercel + Supabase)
+## 🌟 Key Features
 
-Both have free plans, no credit card needed. Total time: about 10 minutes.
+### 1. 📍 Location-Based Mosque Finder
+- **Live GPS Detection**: Real-time geolocation detection using HTML5 Geolocation API with manual area fallback (Mirpur, Paltan, Gulshan, Dhanmondi, Uttara, Chittagong, Sylhet, Khulna).
+- **Accurate Proximity**: Accurate distance calculation using the Haversine formula (`300 meter`, `500 meter`, `1.2 km`).
+- **Real Database & Verified Mosques**: Seeded with real, authentic Bangladeshi mosques with exact coordinates, administrative divisions (Division, District, Upazila, Union/Ward), cover photos, and phone numbers.
 
-### Step 1 — Put the code on GitHub
+### 2. ⏳ Real-Time Prayer Time Tracking
+- **Bangladesh Standard Time (BST)**: Real-time synchronized clock.
+- **Dynamic Jamat Calculations**: Automatically tracks current and upcoming prayers with down-to-the-second countdowns.
+- **Live Jamat Alerts**: Prominently displays **"Asr prayer time started (আসর জামাত চলছে)"** when prayer time begins.
 
-1. Create a free account at <https://github.com> and click **New repository** (e.g. `workpulse`, private is fine).
-2. Upload the project:
-   - **Without Git:** on the empty repository page click **uploading an existing file**, drag the whole project folder in (skip `node_modules` and `.next` — they are huge and not needed), then **Commit changes**.
-   - **With Git:**
-     ```bash
-     git init
-     git add .
-     git commit -m "WorkPulse"
-     git branch -M main
-     git remote add origin https://github.com/YOUR_USERNAME/workpulse.git
-     git push -u origin main
-     ```
-   The included `.gitignore` keeps `.env` (your database password) out of the repository.
+### 3. 🗓️ 15-Day Timetable Validity & Update Cycle
+- Mosque prayer times change every 15 days in Bangladesh.
+- Every timetable includes an active validity window (e.g. `01 September - 15 September`).
+- Automated notification banner: **"⚠️ Please update mosque prayer timetable (সময়সূচি মেয়াদোত্তীর্ণ, হালনাগাদ আবশ্যক)"** when 15 days expire.
 
-### Step 2 — Create the free database on Supabase
+### 4. 🤖 AI OCR Image Reading & Admin Management
+- **OCR Assistance**: Automatically reads uploaded prayer timetable charts (Bengali & English numerals and waqt names).
+- **Verification Safeguard**: Strict human-in-the-loop policy — AI only assists reading images; admin verifies before saving.
+- **Mosque Management**: Admin portal to register new mosques, edit prayer schedules, replace chart images, and monitor validity status.
 
-1. Go to <https://supabase.com> → **Start your project** → sign in with GitHub.
-2. **New project** → pick a name, set a **strong database password (save it!)**, choose the region closest to you (e.g. Singapore for Bangladesh) → **Create new project**. Wait ~1 minute.
-3. Click the **Connect** button at the top of the dashboard.
-4. Under **Connection string**, choose **Transaction pooler** (port `6543`) and copy the URI. It looks like:
-   ```
-   postgresql://postgres.abcdefghij:[YOUR-PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres
-   ```
-5. Replace `[YOUR-PASSWORD]` with the password from step 2. Keep this string for the next step.
-
-> Use the **pooler** string, not the "Direct connection" one — the direct host is IPv6-only on the free plan and Vercel cannot reach it.
-
-You do **not** need to create tables. The app creates them automatically the first time it runs.
-
-### Step 3 — Deploy on Vercel
-
-1. Go to <https://vercel.com> → **Sign up** with GitHub.
-2. **Add New… → Project** → **Import** your `workpulse` repository.
-3. Open **Environment Variables** and add:
-
-   | Name | Value |
-   |------|-------|
-   | `DATABASE_URL` | the Supabase connection string from step 2 |
-   | `OWNER_NAME` | your name (optional — can be set later on the Profile page) |
-   | `OWNER_DEPARTMENT` | e.g. `Customer Support` (optional) |
-
-4. Click **Deploy**. After ~1 minute you get a URL like `https://workpulse.vercel.app`.
-5. Open it — the tables and a blank profile are created on first load. Set your name on **Profile**, then start logging.
-
-Every later `git push` (or file upload on GitHub) redeploys automatically.
-
-### After deploying
-
-- **Settings → Profile**: change your name/department any time.
-- **Reports → Generate report**: pick *This week / Last week / Last 7 days / This month*, edit the text, then download **Word (.doc)**, **Markdown**, or **PDF** (print dialog → "Save as PDF").
-- **Performance → Export Excel (CSV)**: the monthly sheet for your manager.
-- The database starts completely empty — no sample data. **Profile** → set your name and photo, then check in and log your first activity.
+### 5. 🗺️ Interactive Maps
+- Built with **Leaflet** and **OpenStreetMap**.
+- Custom Islamic minaret markers with distance badges and one-click navigation to **Google Maps**.
 
 ---
 
-## Alternative free options
+## 🛠️ Tech Stack
 
-### A) Vercel + Neon (everything inside Vercel)
+- **Framework**: Next.js 16 (App Router, Turbopack) & React 19
+- **Database**: PostgreSQL 17 (Supabase Pooler)
+- **Maps**: Leaflet & OpenStreetMap + Google Maps Navigation
+- **OCR Engine**: Tesseract.js & Vision-based Bengali/English numeral parser
+- **Styling**: Tailwind CSS (Islamic Emerald Green, White, and Gold theme)
+- **Icons**: Lucide React
 
-1. In your Vercel project open the **Storage** tab → **Create Database** → **Neon** (free plan) → **Continue**.
-2. Vercel adds `DATABASE_URL` to the project automatically. Add `OWNER_NAME` / `OWNER_DEPARTMENT` under **Settings → Environment Variables**.
-3. **Deployments → Redeploy**. Done.
+---
 
-Neon's free database sleeps when idle and wakes automatically on the next request (first load may take ~1 s).
+## 🚀 Getting Started
 
-### B) Free VPS with Coolify (self-hosted, no vendor limits)
-
-Oracle Cloud's *Always Free* tier gives a small permanent VM (Ampere A1, up to 4 OCPU / 24 GB RAM).
-
-1. Create the VM (Ubuntu 22.04), open ports **80/443/8000** in its security list, SSH in.
-2. Install Coolify: `curl -fsSL https://cdn.coollabs.io/coolify/install.sh | bash` and open `http://YOUR_IP:8000`.
-3. **Resources → New → Database → PostgreSQL** → Start. Copy the *internal* connection URL.
-4. **Resources → New → Public Repository** (or GitHub app) → paste your repo URL → build pack **Nixpacks** (auto-detects Next.js), port `3000`.
-5. Environment variables: `DATABASE_URL` = the internal URL **with `?sslmode=disable` appended**, plus `OWNER_NAME`, `OWNER_DEPARTMENT`.
-6. Deploy. Optionally attach a domain and Coolify issues a free HTTPS certificate.
-
-The same steps work on a paid VPS (Hostinger, Hetzner, DigitalOcean…).
-
-### C) Any server with Docker (docker compose)
-
+### 1. Clone & Install
 ```bash
-git clone https://github.com/YOUR_USERNAME/workpulse.git && cd workpulse
-# edit docker-compose.yml: change the password and OWNER_NAME
-docker compose up -d --build
-```
-Open `http://YOUR_SERVER_IP:3000`. Put Caddy or Nginx in front for HTTPS.
-
----
-
-## Run locally
-
-```bash
-cp .env.example .env         # set DATABASE_URL to any Postgres (local, Supabase or Neon)
+git clone https://github.com/rashedislam6535-sketch/nearby-masjid.git
+cd nearby-masjid
 npm install
-npm run dev                  # http://localhost:3000
 ```
 
-Tables are created automatically on first load; the database starts empty. To apply schema changes after editing `src/db/schema.ts`:
+### 2. Configure Environment Variables
+Create a `.env` file with your PostgreSQL connection:
+```env
+DATABASE_URL="postgresql://postgres:...@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres"
+PGSSLMODE="require"
+```
 
+### 3. Initialize & Seed Database
 ```bash
-npx drizzle-kit push --dialect=postgresql --schema=./src/db/schema.ts --url="$DATABASE_URL"
+node scripts/init-masjid-db.js
+node scripts/generate-charts.js
 ```
 
----
-
-## Environment variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `DATABASE_URL` | yes | Postgres connection string. SSL is enabled automatically for remote hosts; append `?sslmode=disable` for Postgres inside a Docker/Coolify network, or `?sslmode=verify-full` for strict certificate checks. |
-| `OWNER_NAME` | no | Name pre-filled on first run. Editable on the Profile page. |
-| `OWNER_DEPARTMENT` | no | Department pre-filled on first run. |
-
-`DATABASE_URL` is only needed at runtime, never at build time.
-
----
-
-## Free-tier limits (as of 2026 — check the providers' pricing pages)
-
-| Provider | Free plan | Notes |
-|----------|-----------|-------|
-| Vercel Hobby | 100 GB bandwidth/month, serverless functions included | Personal / non-commercial use |
-| Supabase Free | 2 projects, 500 MB database | **Pauses after 7 days without activity** — reopen the Supabase dashboard and click *Restore project* (your data is kept). Logging work daily keeps it active. |
-| Neon Free | 0.5 GB storage, 1 project | Auto-sleeps, auto-wakes |
-| Oracle Cloud Always Free | 1 Ampere VM (up to 4 OCPU / 24 GB) | Needs a card for identity verification, but is not charged |
-
----
-
-## Troubleshooting
-
-| Problem | Fix |
-|---------|-----|
-| Vercel build fails with `DATABASE_URL is not set` | Add the variable under **Settings → Environment Variables** (all environments) and **Redeploy**. |
-| `ENETUNREACH` / `ECONNREFUSED` / timeouts on Vercel | You used Supabase's *Direct connection* string. Switch to the **Transaction pooler** string (port 6543). |
-| `password authentication failed` | The `[YOUR-PASSWORD]` placeholder wasn't replaced, or the password contains special characters — URL-encode them (`@` → `%40`, `#` → `%23`, `/` → `%2F`). You can reset the password in Supabase → Project Settings → Database. |
-| `The server does not support SSL connections` | Postgres inside Docker/Coolify: append `?sslmode=disable` to `DATABASE_URL`. |
-| Site suddenly errors after a week | Supabase paused the free project — open its dashboard and restore it. |
-
----
-
-## Project structure
-
+### 4. Run Locally
+```bash
+npm run dev
 ```
-src/
-  app/
-    api/            dashboard, updates, reports, attendance, profile, reset, health
-    layout.tsx      theme bootstrap (light/dark, no flash)
-    page.tsx
-  components/       Dashboard, DailyUpdateForm, Timeline, Calendar, Performance, Reports, Settings, charts
-  context/          app state (profile, theme, notifications, search)
-  db/               schema.ts (Drizzle), index.ts (client), seed.ts (auto table creation + first-run data)
-  lib/utils.ts      dates, scoring, CSV/download helpers
-Dockerfile, docker-compose.yml   self-hosting
-.env.example                     configuration template
-```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 📄 License
+MIT License. Built for the Muslim community of Bangladesh.
