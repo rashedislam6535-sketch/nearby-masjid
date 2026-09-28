@@ -15,6 +15,11 @@ interface MosqueCardProps {
   onToggleFavorite?: (id: number) => void;
 }
 
+const DEFAULT_FALLBACK_DATES = {
+  updated_date: '2026-03-01T00:00:00.000Z',
+  next_update_date: '2026-03-16T00:00:00.000Z'
+};
+
 export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
   const prayer = mosque.prayer || {
     mosque_id: mosque.id,
@@ -25,8 +30,7 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
     isha: '08:00 PM',
     jummah: '01:30 PM',
     image: '/images/charts/baitul_aman_chart.svg',
-    updated_date: new Date().toISOString(),
-    next_update_date: new Date(Date.now() + 15 * 86400000).toISOString()
+    ...DEFAULT_FALLBACK_DATES
   };
 
   const tracking = calculatePrayerCountdown(prayer);

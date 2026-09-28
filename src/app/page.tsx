@@ -9,6 +9,7 @@ import { AdminPortal } from '@/components/AdminPortal';
 import { MasjidMap } from '@/components/MasjidMap';
 import { BottomNavBar } from '@/components/BottomNavBar';
 import { QiblaCompassModal } from '@/components/QiblaCompassModal';
+import { DailySalatTracker } from '@/components/DailySalatTracker';
 import { MosqueData } from '@/types/masjid';
 import { Search, Filter, AlertTriangle, RefreshCw, Compass, MapPin, Navigation, Sparkles, SlidersHorizontal } from 'lucide-react';
 import { BD_LOCATION_PRESETS } from '@/lib/geoUtils';
@@ -82,8 +83,52 @@ export default function NearbyMasjidApp() {
   }, [location.lat, location.lng, selectedDivision, searchQuery, expiredOnly]);
 
   useEffect(() => {
-    fetchMosques();
-  }, [fetchMosques]);
+    let ignore = false;
+    const loadData = async () => {
+      try {
+        const params = new URLSearchParams();
+        if (location.lat && location.lng) {
+          params.set('lat', location.lat.toString());
+          params.set('lng', location.lng.toString());
+        }
+        if (selectedDivision && selectedDivision !== 'All') {
+          params.set('division', selectedDivision);
+        }
+        if (searchQuery.trim()) {
+          params.set('search', searchQuery.trim());
+        }
+        if (expiredOnly) {
+          params.set('expiredOnly', 'true');
+        }
+
+        const res = await fetch(`/api/mosques?${params.toString()}`);
+        const data = await res.json();
+
+        if (!ignore) {
+          if (data.success) {
+            setMosques(data.mosques);
+          } else {
+            setError(data.error || 'Failed to load mosques from database');
+          }
+        }
+      } catch (err) {
+        if (!ignore) {
+          console.error('Fetch error:', err);
+          setError((err as Error).message);
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      ignore = true;
+    };
+  }, [location.lat, location.lng, selectedDivision, searchQuery, expiredOnly]);
 
   // Request Live GPS Location from Browser
   const handleRequestGps = (autoScroll = false) => {
@@ -167,6 +212,12 @@ export default function NearbyMasjidApp() {
               onLocationChange={setLocation}
               onRequestGps={() => handleRequestGps(false)}
               gpsLoading={gpsLoading}
+              activeMosquePrayer={activeMosquePrayer}
+              lang={lang}
+            />
+
+            {/* Today's Daily Salat Done Tracker with Checkboxes */}
+            <DailySalatTracker
               activeMosquePrayer={activeMosquePrayer}
               lang={lang}
             />

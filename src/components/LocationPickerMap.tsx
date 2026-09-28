@@ -18,11 +18,7 @@ export function LocationPickerMap({ lat, lng, onChange, lang }: LocationPickerMa
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [locating, setLocating] = useState(false);
-  const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number }>({ lat, lng });
-
-  useEffect(() => {
-    setCurrentCoords({ lat, lng });
-  }, [lat, lng]);
+  const currentCoords = { lat, lng };
 
   useEffect(() => {
     let isMounted = true;
@@ -77,7 +73,6 @@ export function LocationPickerMap({ lat, lng, onChange, lang }: LocationPickerMa
       // Drag event
       marker.on('dragend', () => {
         const pos = marker.getLatLng();
-        setCurrentCoords({ lat: pos.lat, lng: pos.lng });
         onChange(Number(pos.lat.toFixed(6)), Number(pos.lng.toFixed(6)));
       });
 
@@ -85,7 +80,6 @@ export function LocationPickerMap({ lat, lng, onChange, lang }: LocationPickerMa
       map.on('click', (e) => {
         const { lat: clickLat, lng: clickLng } = e.latlng;
         marker.setLatLng([clickLat, clickLng]);
-        setCurrentCoords({ lat: clickLat, lng: clickLng });
         onChange(Number(clickLat.toFixed(6)), Number(clickLng.toFixed(6)));
       });
 
@@ -106,7 +100,6 @@ export function LocationPickerMap({ lat, lng, onChange, lang }: LocationPickerMa
 
   // Update marker position when coords change from search or GPS
   const updateMapPosition = (newLat: number, newLng: number) => {
-    setCurrentCoords({ lat: newLat, lng: newLng });
     onChange(Number(newLat.toFixed(6)), Number(newLng.toFixed(6)));
 
     if (mapInstanceRef.current && markerRef.current) {

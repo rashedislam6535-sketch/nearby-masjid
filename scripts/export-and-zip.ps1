@@ -1,9 +1,9 @@
 # PowerShell script to export clean project files and create zip archive
 $ErrorActionPreference = "Stop"
 
-$source = "c:\Users\WMT CS\Downloads\employee-performance-tracker-app"
-$destFolder = "c:\Users\WMT CS\Downloads\nearby-masjid-app"
-$destZip = "c:\Users\WMT CS\Downloads\nearby-masjid-app.zip"
+$source = (Resolve-Path "$PSScriptRoot\..").Path
+$destFolder = Join-Path (Split-Path $source -Parent) "nearby-masjid-app"
+$destZip = Join-Path (Split-Path $source -Parent) "nearby-masjid-app.zip"
 
 Write-Host "Cleaning previous export if exists..."
 if (Test-Path -LiteralPath $destFolder) {
@@ -16,7 +16,7 @@ if (Test-Path -LiteralPath $destZip) {
 New-Item -ItemType Directory -Path $destFolder -Force | Out-Null
 
 $excludeDirs = @("node_modules", ".next", ".git", ".vercel")
-$excludeFiles = @("tsconfig.tsbuildinfo", ".workpulse-local-data.json")
+$excludeFiles = @("tsconfig.tsbuildinfo")
 
 Write-Host "Copying project files with LiteralPath support..."
 Get-ChildItem -LiteralPath $source -Recurse | ForEach-Object {

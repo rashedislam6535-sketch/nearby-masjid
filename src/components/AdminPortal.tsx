@@ -172,7 +172,7 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
     try {
       const savedTab = localStorage.getItem(ADMIN_TAB_KEY);
       if (savedTab && (savedTab === 'ocr' || savedTab === 'add' || savedTab === 'list') && !preselectedMosque) {
-        setActiveTab(savedTab as 'ocr' | 'add' | 'list');
+        queueMicrotask(() => setActiveTab(savedTab as 'ocr' | 'add' | 'list'));
       }
 
       const savedDraft = localStorage.getItem(DRAFT_MOSQUE_KEY);
@@ -181,9 +181,11 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
         if (parsed && typeof parsed === 'object') {
           // If at least one custom field was filled
           if (parsed.mosque_name_bn || parsed.mosque_name_en || parsed.address) {
-            setAddForm((prev) => ({ ...prev, ...parsed }));
-            setDraftRestoredNotice(true);
-            setIsFormDirty(true);
+            queueMicrotask(() => {
+              setAddForm((prev) => ({ ...prev, ...parsed }));
+              setDraftRestoredNotice(true);
+              setIsFormDirty(true);
+            });
           }
         }
       }
@@ -203,7 +205,7 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
       );
       if (hasContent) {
         localStorage.setItem(DRAFT_MOSQUE_KEY, JSON.stringify(addForm));
-        setIsFormDirty(true);
+        queueMicrotask(() => setIsFormDirty(true));
       }
     } catch (e) {
       console.warn('Error saving admin draft:', e);
@@ -239,23 +241,25 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
   // When preselected mosque changes
   useEffect(() => {
     if (preselectedMosque) {
-      setSelectedMosqueId(preselectedMosque.id);
-      setActiveTab('ocr');
-      if (preselectedMosque.prayer) {
-        setTimetableForm({
-          fajr: preselectedMosque.prayer.fajr,
-          dhuhr: preselectedMosque.prayer.dhuhr,
-          asr: preselectedMosque.prayer.asr,
-          maghrib: preselectedMosque.prayer.maghrib,
-          isha: preselectedMosque.prayer.isha,
-          jummah: preselectedMosque.prayer.jummah || '01:30 PM',
-          validity_days: '15',
-          notes: ''
-        });
-        if (preselectedMosque.prayer.image) {
-          setChartImageUri(preselectedMosque.prayer.image);
+      queueMicrotask(() => {
+        setSelectedMosqueId(preselectedMosque.id);
+        setActiveTab('ocr');
+        if (preselectedMosque.prayer) {
+          setTimetableForm({
+            fajr: preselectedMosque.prayer.fajr,
+            dhuhr: preselectedMosque.prayer.dhuhr,
+            asr: preselectedMosque.prayer.asr,
+            maghrib: preselectedMosque.prayer.maghrib,
+            isha: preselectedMosque.prayer.isha,
+            jummah: preselectedMosque.prayer.jummah || '01:30 PM',
+            validity_days: '15',
+            notes: ''
+          });
+          if (preselectedMosque.prayer.image) {
+            setChartImageUri(preselectedMosque.prayer.image);
+          }
         }
-      }
+      });
     }
   }, [preselectedMosque]);
 

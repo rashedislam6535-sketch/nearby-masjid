@@ -14,6 +14,11 @@ interface MosqueDetailsModalProps {
   lang: 'en' | 'bn';
 }
 
+const DEFAULT_FALLBACK_DATES = {
+  updated_date: '2026-03-01T00:00:00.000Z',
+  next_update_date: '2026-03-16T00:00:00.000Z'
+};
+
 export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDeleteMosque, lang }: MosqueDetailsModalProps) {
   const [imageZoomed, setImageZoomed] = useState<boolean>(false);
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
@@ -29,8 +34,7 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
     isha: '08:00 PM',
     jummah: '01:30 PM',
     image: '/images/charts/baitul_aman_chart.svg',
-    updated_date: new Date().toISOString(),
-    next_update_date: new Date(Date.now() + 15 * 86400000).toISOString()
+    ...DEFAULT_FALLBACK_DATES
   };
 
   const validity = checkTimetableValidity(prayer.updated_date, prayer.next_update_date);

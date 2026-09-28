@@ -11,9 +11,10 @@ interface DialogProps {
   children: React.ReactNode;
 }
 
+const emptySub = () => () => {};
+
 export function Dialog({ open, onOpenChange, children }: DialogProps) {
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => setMounted(true), []);
+  const mounted = React.useSyncExternalStore(emptySub, () => true, () => false);
 
   React.useEffect(() => {
     if (!open) return;

@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import { MapPin, Navigation, Clock, Bell, Sparkles, ChevronDown, Volume2 } from 'lucide-react';
 import { calculatePrayerCountdown } from '@/lib/prayerTracker';
 import { BD_LOCATION_PRESETS, BDLocationPreset } from '@/lib/geoUtils';
 import { getHijriDate, getDailyWisdom, playSoftChime } from '@/lib/islamicUtils';
+
+const subscribeMounted = () => () => {};
 
 interface NextPrayerCardProps {
   currentLocation: {
@@ -42,12 +44,11 @@ export function NextPrayerCard({
   },
   lang
 }: NextPrayerCardProps) {
-  const [currentTime, setCurrentTime] = useState<Date>(new Date());
-  const [mounted, setMounted] = useState<boolean>(false);
+  const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
+  const mounted = useSyncExternalStore(subscribeMounted, () => true, () => false);
   const [showAreaPicker, setShowAreaPicker] = useState<boolean>(false);
 
   useEffect(() => {
-    setMounted(true);
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
