@@ -5,11 +5,22 @@
 
 @layer base {
   :root {
-    --islamic-dark-green: #064e3b;
-    --islamic-forest: #022c22;
-    --islamic-gold: #d97706;
-    --islamic-gold-light: #fbbf24;
-    --islamic-cream: #fbfbf9;
+    --bg-page: #F8FAF9;
+    --surface-card: #FFFFFF;
+    --surface-subtle: #F2F5F3;
+    --text-primary: #18211C;
+    --text-secondary: #66706A;
+    --text-muted: #8D9892;
+    --border-color: #E4E9E5;
+    --border-hover: #D0D7D2;
+    --brand-green: #176B4D;
+    --brand-green-dark: #124C39;
+    --brand-green-surface: #EEF6F2;
+    --brand-green-border: #C2DFD2;
+    --brand-gold: #C7963C;
+    --danger-surface: #FEF2F2;
+    --danger-border: #FECACA;
+    --danger-text: #DC2626;
   }
 }
 
@@ -21,8 +32,8 @@ html {
 }
 
 body {
-  background-color: #f8faf9;
-  color: #0f172a;
+  background-color: #F8FAF9;
+  color: #18211C;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -31,67 +42,21 @@ body {
   width: 100%;
 }
 
-/* Islamic Geometric & Pattern Accents */
-.islamic-pattern-bg {
-  background-color: #064e3b;
-  background-image: radial-gradient(#10b98125 1.5px, transparent 1.5px), radial-gradient(#fbbf2420 1.5px, #064e3b 1.5px);
-  background-size: 30px 30px;
-  background-position: 0 0, 15px 15px;
+/* Subtle, clean utility cards & surfaces */
+.card-surface {
+  background-color: #FFFFFF;
+  border: 1px solid #E4E9E5;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(16, 24, 20, 0.04);
 }
 
-.islamic-pattern-subtle {
-  background-image: radial-gradient(rgba(245, 158, 11, 0.08) 1px, transparent 1px);
-  background-size: 16px 16px;
+.card-surface-hover {
+  transition: all 0.2s ease;
 }
 
-.gold-gradient {
-  background: linear-gradient(135deg, #d97706 0%, #f59e0b 50%, #b45309 100%);
-}
-
-.green-gradient {
-  background: linear-gradient(135deg, #064e3b 0%, #042f2e 100%);
-}
-
-/* Glassmorphism surfaces */
-.glass-nav {
-  background: rgba(2, 44, 34, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
-}
-
-.glass-bottom-nav {
-  background: rgba(2, 44, 34, 0.94);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid rgba(251, 191, 36, 0.25);
-}
-
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-}
-
-.glass-emerald {
-  background: rgba(6, 78, 59, 0.85);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.card-gold-border {
-  border: 1px solid rgba(217, 119, 6, 0.25);
-}
-
-/* Glow effects */
-.glow-emerald {
-  box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.25);
-}
-
-.glow-gold {
-  box-shadow: 0 0 25px -4px rgba(251, 191, 36, 0.35);
+.card-surface-hover:hover {
+  border-color: #C2DFD2;
+  box-shadow: 0 4px 12px rgba(16, 24, 20, 0.06);
 }
 
 /* Custom pulse for running prayer */

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useSyncExternalStore } from 'react';
-import { MapPin, Navigation, Clock, Bell, Sparkles, ChevronDown, Volume2 } from 'lucide-react';
+import { MapPin, Navigation, Clock, Bell, ChevronDown } from 'lucide-react';
 import { calculatePrayerCountdown } from '@/lib/prayerTracker';
 import { BD_LOCATION_PRESETS, BDLocationPreset } from '@/lib/geoUtils';
 import { getHijriDate, getDailyWisdom, playSoftChime } from '@/lib/islamicUtils';
@@ -57,7 +57,6 @@ export function NextPrayerCard({
 
   const tracking = calculatePrayerCountdown(activeMosquePrayer, currentTime);
 
-  // Format current live time
   const formattedCurrentTime = mounted
     ? currentTime.toLocaleTimeString('en-US', {
         hour: '2-digit',
@@ -67,92 +66,86 @@ export function NextPrayerCard({
       })
     : '04:00:00 PM';
 
+  const hijri = getHijriDate(currentTime);
+  const wisdom = getDailyWisdom();
+
   return (
-    <div className="space-y-3">
-      {/* Assalamu Alaikum & Current Location Header */}
-      <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-950 text-white rounded-2xl p-4 shadow-lg border border-emerald-800/60 relative overflow-hidden">
-        {/* Subtle Islamic Motif Background Decoration */}
-        <div className="absolute right-0 top-0 w-36 h-36 bg-amber-400/5 rounded-full blur-2xl pointer-events-none" />
-        <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        <div className="flex items-center justify-between relative z-10 mb-2.5">
+    <div className="space-y-4">
+      {/* 1. HERO / CURRENT LOCATION CARD (Clean, Flat, Calm) */}
+      <div className="bg-white border border-[#E4E9E5] rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(16,24,20,0.04)] relative">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* Left: Location & Metadata */}
           <div>
-            <div className="flex flex-wrap items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-300 bg-emerald-950/70 px-2.5 py-0.5 rounded-full border border-amber-400/30">
-                <span>🌙</span>
-                <span>{lang === 'bn' ? getHijriDate(currentTime).formattedBn : getHijriDate(currentTime).formattedEn}</span>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-[11px] font-semibold text-[#66706A] uppercase tracking-wider">
+                {lang === 'bn' ? 'বর্তমান অবস্থান' : 'Current Location'}
               </span>
-              <span className="text-[10px] text-emerald-300/80 uppercase tracking-wider font-semibold">
-                {lang === 'bn' ? 'আসসালামু আলাইকুম' : 'Assalamu Alaikum'}
+              <span className="text-slate-300">•</span>
+              <span className="text-xs text-[#66706A]">
+                {lang === 'bn' ? hijri.formattedBn : hijri.formattedEn}
               </span>
             </div>
-            <h1 className="text-xl font-bold font-serif tracking-tight text-white">
-              {lang === 'bn' ? 'কাছের মসজিদ ও নামাজের সময়' : 'Nearby Mosques & Prayer Times'}
-            </h1>
-          </div>
 
-          {/* Current Live Digital Clock & Chime */}
-          <div className="text-right flex items-center gap-2">
-            <button
-              onClick={() => playSoftChime()}
-              className="p-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/30 transition-all active:scale-95 shadow-sm"
-              title={lang === 'bn' ? 'নরম অ্যালার্ট সাউন্ড টেস্ট করুন' : 'Test Soft Prayer Chime'}
-            >
-              <Bell className="w-4 h-4" />
-            </button>
-            <div>
-              <div className="text-[11px] font-medium text-emerald-300/80 flex items-center gap-1 justify-end">
-                <Clock className="w-3 h-3 text-amber-400" />
-                <span>{lang === 'bn' ? 'লাইভ সময় (BST)' : 'Live BST Time'}</span>
-              </div>
-              <div suppressHydrationWarning className="text-sm font-mono font-bold text-amber-300">
-                {formattedCurrentTime}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Location Detection Bar */}
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-emerald-800/80">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-emerald-800/90 flex items-center justify-center text-amber-400 shadow-inner">
-              <MapPin className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="text-[10px] uppercase font-bold text-emerald-300 tracking-wider">
-                {lang === 'bn' ? '📍 বর্তমান অবস্থান' : '📍 Current Location'}
-              </span>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-[#176B4D] flex-shrink-0" />
               <button
+                type="button"
                 onClick={() => setShowAreaPicker(!showAreaPicker)}
-                className="flex items-center gap-1 text-xs font-bold text-white hover:text-amber-300 transition-colors"
+                className="font-bold text-base sm:text-lg text-[#18211C] hover:text-[#176B4D] transition-colors flex items-center gap-1.5"
+                title="Change area"
               >
                 <span>{currentLocation.area}</span>
-                <ChevronDown className="w-3 h-3 text-amber-400" />
+                <ChevronDown className={`w-4 h-4 text-[#66706A] transition-transform ${showAreaPicker ? 'rotate-180' : ''}`} />
               </button>
             </div>
           </div>
 
-          {/* GPS refresh / live detection button */}
-          <div className="flex items-center gap-1.5">
+          {/* Right: GPS Trigger & Live Clock */}
+          <div className="flex items-center gap-3 self-start sm:self-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E4E9E5]">
             <button
               onClick={onRequestGps}
               disabled={gpsLoading}
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                 currentLocation.isGps
-                  ? 'bg-emerald-600/60 text-white border-emerald-400/40 shadow-sm'
-                  : 'bg-emerald-950 hover:bg-emerald-800 text-emerald-200 border-emerald-700/60'
+                  ? 'bg-[#EEF6F2] text-[#176B4D] border-[#C2DFD2]'
+                  : 'bg-white hover:bg-[#F8FAF9] text-[#18211C] border-[#E4E9E5]'
               }`}
               title="Use precise GPS location"
             >
-              <Navigation className={`w-3.5 h-3.5 ${gpsLoading ? 'animate-spin text-amber-400' : 'text-emerald-300'}`} />
-              <span>{gpsLoading ? (lang === 'bn' ? 'খোঁজা হচ্ছে...' : 'Locating...') : (currentLocation.isGps ? 'GPS Live' : 'Use GPS')}</span>
+              <Navigation className={`w-3.5 h-3.5 ${gpsLoading ? 'animate-spin text-[#176B4D]' : 'text-[#66706A]'}`} />
+              <span>
+                {gpsLoading
+                  ? (lang === 'bn' ? 'শনাক্ত হচ্ছে...' : 'Locating...')
+                  : (currentLocation.isGps ? (lang === 'bn' ? 'জিপিএস সক্রিয়' : 'GPS Live') : (lang === 'bn' ? 'জিপিএস ব্যবহার করুন' : 'Use GPS'))}
+              </span>
             </button>
+
+            <div className="h-6 w-px bg-[#E4E9E5] hidden sm:block" />
+
+            <div className="flex items-center gap-2">
+              <div className="text-right">
+                <div className="text-[10px] text-[#66706A] font-medium">
+                  {lang === 'bn' ? 'লাইভ সময় (BST)' : 'Live BST Time'}
+                </div>
+                <div suppressHydrationWarning className="text-xs font-mono font-bold text-[#18211C]">
+                  {formattedCurrentTime}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => playSoftChime()}
+                className="p-1.5 rounded-lg text-[#66706A] hover:text-[#176B4D] hover:bg-[#EEF6F2] transition-colors"
+                title={lang === 'bn' ? 'নরম অ্যালার্ট সাউন্ড টেস্ট করুন' : 'Test Soft Chime'}
+              >
+                <Bell className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Area Quick Switcher Dropdown */}
         {showAreaPicker && (
-          <div className="mt-3 pt-3 border-t border-emerald-800/60 grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+          <div className="mt-3 pt-3 border-t border-[#E4E9E5] grid grid-cols-2 sm:grid-cols-4 gap-1.5 animate-in fade-in duration-150">
             {BD_LOCATION_PRESETS.map((preset: BDLocationPreset) => (
               <button
                 key={preset.name}
@@ -165,104 +158,73 @@ export function NextPrayerCard({
                   });
                   setShowAreaPicker(false);
                 }}
-                className={`text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                className={`text-left px-2.5 py-1.5 rounded-lg text-xs transition-colors border ${
                   currentLocation.area.includes(preset.area)
-                    ? 'bg-amber-500 text-emerald-950 font-bold'
-                    : 'bg-emerald-900/60 hover:bg-emerald-800/80 text-emerald-200'
+                    ? 'bg-[#EEF6F2] text-[#176B4D] border-[#C2DFD2] font-semibold'
+                    : 'bg-white hover:bg-[#F8FAF9] text-[#66706A] border-[#E4E9E5]'
                 }`}
               >
-                <div className="font-semibold truncate">{lang === 'bn' ? preset.nameBn : preset.name}</div>
-                <div className="text-[10px] opacity-75">{preset.area}</div>
+                <div className="truncate">{lang === 'bn' ? preset.nameBn : preset.name}</div>
+                <div className="text-[10px] text-[#8D9892] truncate">{preset.area}</div>
               </button>
             ))}
           </div>
         )}
       </div>
 
-      {/* Next Prayer Card (Requested exact format) */}
-      <div className={`rounded-2xl p-4 shadow-md transition-all ${
-        tracking.isRunningNow
-          ? 'bg-gradient-to-r from-emerald-900 via-teal-900 to-emerald-950 text-white border-2 border-amber-400 shadow-amber-500/10'
-          : 'bg-white text-slate-800 border border-slate-200/80'
-      }`}>
-        <div className="flex items-start justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm ${
-              tracking.isRunningNow
-                ? 'bg-gradient-to-tr from-amber-500 to-amber-400 text-emerald-950'
-                : 'bg-emerald-900 text-amber-300'
-            }`}>
-              🕌
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className={`text-xs font-bold uppercase tracking-wider ${
-                  tracking.isRunningNow ? 'text-amber-300' : 'text-emerald-700'
-                }`}>
-                  {tracking.isRunningNow 
-                    ? (lang === 'bn' ? 'চলমান ওয়াক্ত' : 'Running Prayer') 
-                    : (lang === 'bn' ? 'পরবর্তী ওয়াক্ত' : 'Next Prayer')}
+      {/* 2. NEXT PRAYER SECTION (Primary Visual Focal Point) */}
+      <div className="bg-white border border-[#E4E9E5] rounded-2xl p-5 shadow-[0_1px_3px_rgba(16,24,20,0.04)] space-y-4">
+        {/* Two-Column Desktop Layout */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Left Column: Label, Name & Start Time */}
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-xs font-bold text-[#176B4D] tracking-wider uppercase">
+                {tracking.isRunningNow
+                  ? (lang === 'bn' ? 'চলমান ওয়াক্ত' : 'CURRENT PRAYER')
+                  : (lang === 'bn' ? 'পরবর্তী ওয়াক্ত' : 'NEXT PRAYER')}
+              </span>
+              {tracking.isRunningNow && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#EEF6F2] text-[#176B4D] border border-[#C2DFD2]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#176B4D] animate-pulse" />
+                  <span>{lang === 'bn' ? 'জামাত চলছে' : 'In Progress'}</span>
                 </span>
-                {tracking.isRunningNow && (
-                  <span className="flex h-2 w-2 relative">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                  </span>
-                )}
-              </div>
-              <h2 className={`text-2xl font-black font-serif tracking-tight ${
-                tracking.isRunningNow ? 'text-white' : 'text-emerald-950'
-              }`}>
+              )}
+            </div>
+
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#18211C]">
                 {lang === 'bn' ? tracking.nextPrayer.nameBn : tracking.nextPrayer.nameEn}
               </h2>
+              <span className="text-sm text-[#66706A]">
+                {lang === 'bn' ? 'শুরু: ' : 'Starts at '}
+                <strong className="text-[#18211C] font-semibold">{tracking.nextPrayerTimeFormatted}</strong>
+              </span>
             </div>
           </div>
 
-          {/* Time & Alert button */}
-          <div className="text-right">
-            <div className={`text-xs font-medium ${tracking.isRunningNow ? 'text-emerald-200' : 'text-slate-500'}`}>
-              {lang === 'bn' ? 'শুরুর সময়' : 'Starts'}
+          {/* Right Column: Countdown / Remaining Time */}
+          <div className="sm:text-right">
+            <div className="text-xs text-[#66706A] font-medium mb-0.5">
+              {tracking.isRunningNow
+                ? (lang === 'bn' ? 'পরবর্তী ওয়াক্ত পর্যন্ত' : 'Until next waqt')
+                : (lang === 'bn' ? 'বাকি সময়' : 'Time remaining')}
             </div>
-            <div className={`text-2xl font-black tracking-tight ${
-              tracking.isRunningNow ? 'text-amber-300' : 'text-emerald-900'
-            }`}>
-              {tracking.nextPrayerTimeFormatted}
+            <div suppressHydrationWarning className="text-2xl sm:text-3xl font-extrabold text-[#176B4D] tracking-tight">
+              {mounted ? (
+                tracking.diffMinutes > 0
+                  ? `${tracking.diffMinutes} ${lang === 'bn' ? 'মিনিট' : 'min remaining'}`
+                  : `${tracking.diffSeconds} ${lang === 'bn' ? 'সেকেন্ড' : 'sec remaining'}`
+              ) : 'Loading...'}
+            </div>
+            <div suppressHydrationWarning className="text-xs text-[#66706A] font-mono mt-0.5">
+              {mounted ? tracking.countdownText : ''}
             </div>
           </div>
         </div>
 
-        {/* When Prayer Time Starts Banner (Explicitly requested by user) */}
-        {tracking.isRunningNow ? (
-          <div className="mt-3.5 bg-amber-500/20 border border-amber-400/50 rounded-xl px-3.5 py-2 flex items-center justify-between text-amber-200 font-bold text-sm animate-pulse">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">📢</span>
-              <span>
-                {tracking.activePrayerName} prayer time started ({tracking.currentPrayer?.nameBn} জামাত চলছে)
-              </span>
-            </div>
-            <span className="text-xs bg-amber-400 text-emerald-950 px-2 py-0.5 rounded-full font-extrabold uppercase">
-              Live
-            </span>
-          </div>
-        ) : (
-          <div suppressHydrationWarning className="mt-3.5 bg-emerald-50 rounded-xl px-3.5 py-2.5 flex items-center justify-between border border-emerald-100">
-            <div className="flex items-center gap-2 text-emerald-900 text-sm font-medium">
-              <Clock className="w-4 h-4 text-emerald-700" />
-              <span>{lang === 'bn' ? 'বাকি সময়:' : 'Remaining:'}</span>
-              <strong suppressHydrationWarning className="text-emerald-950 font-bold text-base">
-                {mounted ? (tracking.diffMinutes > 0
-                  ? `${tracking.diffMinutes} ${lang === 'bn' ? 'মিনিট' : 'minutes'}`
-                  : `${tracking.diffSeconds} ${lang === 'bn' ? 'সেকেন্ড' : 'seconds'}`) : 'Calculating...'}
-              </strong>
-            </div>
-            <div suppressHydrationWarning className="text-xs text-emerald-700 font-medium">
-              {mounted ? tracking.countdownText : ''}
-            </div>
-          </div>
-        )}
-
-        {/* 5 Daily Waqts Progress Bar */}
-        <div className="mt-3 grid grid-cols-5 gap-1 pt-2 border-t border-slate-100/20">
+        {/* Five Prayer Times in ONE Clean Horizontal Row */}
+        <div className="grid grid-cols-5 gap-2 pt-3 border-t border-[#E4E9E5]">
           {[
             { key: 'fajr', bn: 'ফজর', en: 'Fajr', time: activeMosquePrayer.fajr },
             { key: 'dhuhr', bn: 'যোহর', en: 'Dhuhr', time: activeMosquePrayer.dhuhr },
@@ -274,30 +236,31 @@ export function NextPrayerCard({
             return (
               <div
                 key={w.key}
-                className={`text-center py-1 px-0.5 rounded-lg text-[11px] transition-all ${
+                className={`py-2 px-1 text-center rounded-xl transition-all border ${
                   isTarget
-                    ? 'bg-amber-500 text-emerald-950 font-bold shadow-sm ring-1 ring-amber-400'
-                    : tracking.isRunningNow
-                    ? 'bg-emerald-950/40 text-emerald-200'
-                    : 'bg-slate-50 text-slate-600'
+                    ? 'bg-[#EEF6F2] border-[#C2DFD2] text-[#176B4D]'
+                    : 'bg-[#F8FAF9] border-[#E4E9E5] text-[#66706A]'
                 }`}
               >
-                <div className="font-semibold truncate">{lang === 'bn' ? w.bn : w.en}</div>
-                <div className="text-[10px] font-mono opacity-85 truncate">{w.time.split(' ')[0]}</div>
+                <div className={`text-xs ${isTarget ? 'font-bold text-[#176B4D]' : 'font-medium text-[#18211C]'}`}>
+                  {lang === 'bn' ? w.bn : w.en}
+                </div>
+                <div className={`text-[11px] font-mono mt-0.5 ${isTarget ? 'font-bold text-[#176B4D]' : 'text-[#66706A]'}`}>
+                  {w.time.split(' ')[0]}
+                  <span className="text-[9px] ml-0.5 opacity-75">{w.time.split(' ')[1]}</span>
+                </div>
               </div>
             );
           })}
         </div>
 
-        {/* Daily Islamic Wisdom Reflection */}
-        <div className="mt-3 pt-2.5 border-t border-slate-200/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-[11px] text-slate-500">
-          <div className="flex items-center gap-1.5 italic">
-            <span className="text-amber-500">❝</span>
-            <span>{lang === 'bn' ? getDailyWisdom().verseBn : getDailyWisdom().verseEn}</span>
-            <span className="text-amber-500">❞</span>
+        {/* Hadith / Daily Reflection (Visually Secondary) */}
+        <div className="pt-3 border-t border-[#E4E9E5] flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs text-[#66706A]">
+          <div className="italic">
+            <span>&ldquo;{lang === 'bn' ? wisdom.verseBn : wisdom.verseEn}&rdquo;</span>
           </div>
-          <span className="text-[10px] text-emerald-800 font-semibold uppercase tracking-wider bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 whitespace-nowrap">
-            {lang === 'bn' ? getDailyWisdom().sourceBn : getDailyWisdom().sourceEn}
+          <span className="text-[11px] text-[#8D9892] sm:text-right whitespace-nowrap">
+            — {lang === 'bn' ? wisdom.sourceBn : wisdom.sourceEn}
           </span>
         </div>
       </div>

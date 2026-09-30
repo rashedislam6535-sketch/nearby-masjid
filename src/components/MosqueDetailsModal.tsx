@@ -114,87 +114,87 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
               href={googleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 py-2.5 px-3 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
+              className="flex-1 py-2.5 px-3 bg-[#176B4D] hover:bg-[#124C39] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs"
             >
-              <Navigation className="w-4 h-4 text-amber-400" />
+              <Navigation className="w-4 h-4" />
               <span>{lang === 'bn' ? 'গুগল ম্যাপে দিকনির্দেশ' : 'Navigate on Google Maps'}</span>
             </a>
 
             {mosque.contact && (
               <a
                 href={`tel:${mosque.contact}`}
-                className="py-2.5 px-4 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                className="py-2.5 px-4 bg-white hover:bg-[#F8FAF9] text-[#18211C] border border-[#E4E9E5] rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
               >
-                <Phone className="w-4 h-4 text-emerald-700" />
+                <Phone className="w-4 h-4 text-[#176B4D]" />
                 <span>{mosque.contact}</span>
               </a>
             )}
 
             <button
               onClick={handleShare}
-              className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-medium flex items-center justify-center transition-colors"
+              className="py-2.5 px-3 bg-white hover:bg-[#F8FAF9] text-[#66706A] hover:text-[#18211C] border border-[#E4E9E5] rounded-xl text-xs font-medium flex items-center justify-center transition-colors"
               title="Share Location"
             >
               <Share2 className="w-4 h-4" />
-              {copySuccess && <span className="text-[10px] ml-1 text-emerald-600 font-bold">Copied!</span>}
+              {copySuccess && <span className="text-[10px] ml-1 text-[#176B4D] font-bold">Copied!</span>}
             </button>
           </div>
 
-          {/* Qibla Direction & Kaaba Bearing Banner */}
-          <div className="bg-gradient-to-r from-emerald-950 via-teal-950 to-emerald-900 text-white rounded-2xl p-4 shadow-sm border border-emerald-800 flex items-center justify-between">
+          {/* Qibla Direction & Kaaba Bearing */}
+          <div className="bg-white rounded-2xl p-4 border border-[#E4E9E5] shadow-[0_1px_3px_rgba(16,24,20,0.04)] flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500 text-emerald-950 flex items-center justify-center font-bold shadow-md flex-shrink-0">
-                <Compass className="w-6 h-6 text-emerald-950" style={{ transform: `rotate(${qibla.degrees}deg)` }} />
+              <div className="w-10 h-10 rounded-xl bg-[#EEF6F2] border border-[#C2DFD2] flex items-center justify-center font-bold flex-shrink-0">
+                <Compass className="w-5 h-5 text-[#176B4D]" style={{ transform: `rotate(${qibla.degrees}deg)` }} />
               </div>
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-amber-300">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#66706A]">
                   {lang === 'bn' ? 'কিবলার দিকনির্দেশ (মক্কার কা\'বা)' : 'Qibla Bearing (Kaaba Direction)'}
                 </h4>
-                <p className="text-sm font-bold mt-0.5 text-white">
+                <p className="text-sm font-bold text-[#18211C] mt-0.5">
                   {qibla.degrees}° {qibla.compassDirection} {lang === 'bn' ? '(পশ্চিম কোণ)' : '(West-Northwest)'}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] font-bold bg-emerald-800/80 text-emerald-200 px-2.5 py-1 rounded-full border border-emerald-600/40">
+              <span className="text-[10px] font-semibold bg-[#EEF6F2] text-[#176B4D] px-2.5 py-1 rounded-full border border-[#C2DFD2]">
                 {lang === 'bn' ? 'সঠিক কম্পাস' : 'True Bearing'}
               </span>
               {mosque.distance_text && (
-                <p className="text-[11px] text-emerald-300/80 mt-1">
+                <p className="text-[11px] text-[#66706A] mt-1">
                   {lang === 'bn' ? 'দূরত্ব:' : 'Dist:'} {mosque.distance_text}
                 </p>
               )}
             </div>
           </div>
 
-          {/* 15-Day Timetable Validity Banner (Explicit Requirement) */}
+          {/* 15-Day Timetable Validity Banner */}
           <div className={`rounded-2xl p-4 border ${
             validity.isExpired 
-              ? 'bg-rose-50 border-rose-200 text-rose-950' 
-              : 'bg-amber-500/10 border-amber-500/30 text-amber-950'
+              ? 'bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]' 
+              : 'bg-white border-[#E4E9E5] text-[#18211C] shadow-[0_1px_3px_rgba(16,24,20,0.04)]'
           }`}>
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
                 {validity.isExpired ? (
-                  <AlertTriangle className="w-5 h-5 text-rose-600 flex-shrink-0" />
+                  <AlertTriangle className="w-5 h-5 text-[#DC2626] flex-shrink-0" />
                 ) : (
-                  <Calendar className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                  <Calendar className="w-5 h-5 text-[#176B4D] flex-shrink-0" />
                 )}
                 <div>
-                  <h4 className="text-xs font-bold uppercase tracking-wider">
+                  <h4 className="text-xs font-semibold uppercase tracking-wider text-[#66706A]">
                     {lang === 'bn' ? 'সময়সূচির বৈধতার মেয়াদ' : 'Timetable Validity Period'}
                   </h4>
-                  <p className="text-sm font-bold mt-0.5">
+                  <p className="text-sm font-bold mt-0.5 text-[#18211C]">
                     {validity.updatedDateFormatted} — {validity.nextUpdateDateFormatted}
                   </p>
                 </div>
               </div>
 
-              <span className={`text-xs px-2.5 py-1 rounded-full font-bold ${
+              <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
                 validity.isExpired 
-                  ? 'bg-rose-200 text-rose-800' 
-                  : 'bg-emerald-100 text-emerald-800'
+                  ? 'bg-[#FEE2E2] text-[#DC2626]' 
+                  : 'bg-[#EEF6F2] text-[#176B4D] border border-[#C2DFD2]'
               }`}>
                 {validity.isExpired 
                   ? (lang === 'bn' ? 'মেয়াদোত্তীর্ণ' : 'Expired') 
@@ -204,8 +204,8 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
 
             {/* Notification reminder if > 15 days expired */}
             {validity.isExpired && (
-              <div className="mt-3 pt-3 border-t border-rose-200/80 flex items-center justify-between gap-2">
-                <div className="text-xs font-semibold text-rose-800">
+              <div className="mt-3 pt-3 border-t border-[#FECACA] flex items-center justify-between gap-2">
+                <div className="text-xs font-medium text-[#991B1B]">
                   ⚠️ {lang === 'bn' ? 'মসজিদের সময়সূচি নিয়মিত পরিবর্তনশীল, হালনাগাদ আবশ্যক' : 'Please update mosque prayer timetable'}
                 </div>
                 {onOpenAdminUpdate && (
@@ -214,7 +214,7 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                       onClose();
                       onOpenAdminUpdate(mosque);
                     }}
-                    className="text-xs bg-rose-600 hover:bg-rose-700 text-white font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"
+                    className="text-xs bg-[#DC2626] hover:bg-[#B91C1C] text-white font-medium px-3 py-1.5 rounded-lg whitespace-nowrap"
                   >
                     {lang === 'bn' ? 'হালনাগাদ করুন' : 'Update Now'}
                   </button>
@@ -223,42 +223,42 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
             )}
           </div>
 
-          {/* Prayer Timetable Image Section (Explicit Requirement) */}
+          {/* Prayer Timetable Image Section */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold uppercase tracking-wide text-slate-800 flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-emerald-700" />
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-[#18211C] flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-[#176B4D]" />
                 <span>{lang === 'bn' ? 'মসজিদের অনুমোদিত সময়সূচি চার্ট' : 'Uploaded Mosque Prayer Chart'}</span>
               </h3>
-              <span className="text-xs text-slate-500 font-medium">
+              <span className="text-xs text-[#66706A] font-medium">
                 {lang === 'bn' ? 'ছবিতে ক্লিক করে বড় করুন' : 'Click to enlarge'}
               </span>
             </div>
 
             <div 
               onClick={() => setImageZoomed(!imageZoomed)}
-              className="relative w-full rounded-2xl overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer group shadow-inner"
+              className="relative w-full rounded-2xl overflow-hidden border border-[#E4E9E5] bg-[#F8FAF9] cursor-pointer group"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={prayer.image || '/images/charts/baitul_aman_chart.svg'}
                 alt="Mosque Prayer Timetable Chart"
-                className="w-full object-contain max-h-72 transition-transform duration-300 group-hover:scale-102"
+                className="w-full object-contain max-h-72 transition-transform duration-300 group-hover:scale-101"
               />
-              <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[11px] font-medium px-2 py-1 rounded-md flex items-center gap-1 backdrop-blur-sm">
+              <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[11px] font-medium px-2 py-1 rounded-md flex items-center gap-1 backdrop-blur-xs">
                 <ZoomIn className="w-3 h-3" />
                 <span>{imageZoomed ? 'Zoom Out' : 'Zoom'}</span>
               </div>
             </div>
           </div>
 
-          {/* Extracted & Verified Prayer Times (Explicit Requirement) */}
+          {/* Extracted & Verified Prayer Times */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold uppercase tracking-wide text-slate-800">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-[#18211C]">
                 {lang === 'bn' ? 'যাচাইকৃত নামাজের জামাত সময়' : 'Extracted Prayer Times (Jamat)'}
               </h3>
-              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <span className="text-[11px] font-semibold text-[#176B4D] bg-[#EEF6F2] px-2 py-0.5 rounded border border-[#C2DFD2]">
                 ✓ Admin Verified
               </span>
             </div>
@@ -278,8 +278,8 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                     key={item.key}
                     className={`p-3 rounded-2xl border transition-all ${
                       isCurrentNext
-                        ? 'bg-gradient-to-tr from-emerald-900 to-teal-900 text-white border-amber-400 shadow-sm'
-                        : 'bg-slate-50 border-slate-200/80 text-slate-800'
+                        ? 'bg-[#EEF6F2] border-[#C2DFD2] text-[#176B4D]'
+                        : 'bg-white border-[#E4E9E5] text-[#18211C]'
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs mb-1">
@@ -287,13 +287,13 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                         {item.icon} {lang === 'bn' ? item.bn : item.en}
                       </span>
                       {isCurrentNext && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-300 bg-amber-400/20 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#176B4D] bg-white px-1.5 py-0.5 rounded border border-[#C2DFD2]">
                           Next
                         </span>
                       )}
                     </div>
-                    <div className={`text-lg font-black font-mono tracking-tight ${
-                      isCurrentNext ? 'text-amber-300' : 'text-emerald-950'
+                    <div className={`text-lg font-bold font-mono tracking-tight ${
+                      isCurrentNext ? 'text-[#176B4D]' : 'text-[#18211C]'
                     }`}>
                       {item.time}
                     </div>

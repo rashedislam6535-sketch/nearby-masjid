@@ -185,7 +185,7 @@ export default function NearbyMasjidApp() {
   const activeMosquePrayer = displayedMosques[0]?.prayer || mosques[0]?.prayer;
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col selection:bg-amber-400 selection:text-emerald-950 overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen bg-[#F8FAF9] flex flex-col text-[#18211C] selection:bg-[#EEF6F2] selection:text-[#176B4D] overflow-x-hidden w-full max-w-full">
       {/* Top Header Navigation */}
       <HeaderNav
         activeTab={activeTab}
@@ -197,13 +197,13 @@ export default function NearbyMasjidApp() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-4 pb-24 sm:pb-8 space-y-4">
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 pb-24 sm:pb-12 space-y-5">
         
         {/* ========================================================= */}
         {/* VIEW 1: NEARBY MOSQUES LIST & DASHBOARD */}
         {/* ========================================================= */}
         {activeTab === 'list' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             
             {/* Top Prayer Card & Current Location Header */}
             <NextPrayerCard
@@ -215,92 +215,82 @@ export default function NearbyMasjidApp() {
               lang={lang}
             />
 
-            {/* Prominent "Nearby Mosques" One-Click Discovery Action Bar */}
-            <div className="bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 p-0.5 rounded-2xl shadow-md">
-              <div className="bg-emerald-950 rounded-[15px] p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 text-white">
-                <div className="flex items-center gap-3 text-center sm:text-left">
-                  <div className="w-10 h-10 rounded-xl bg-amber-500 text-emerald-950 flex items-center justify-center font-black shadow-inner flex-shrink-0 text-lg">
-                    📍
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-sm text-amber-300 flex items-center justify-center sm:justify-start gap-1">
-                      <span>{lang === 'bn' ? 'আমার সবচেয়ে কাছের মসজিদগুলো দেখুন' : 'Show Mosques Nearest To Me'}</span>
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                    </h3>
-                    <p className="text-[11px] text-emerald-200">
-                      {lang === 'bn' 
-                        ? 'লাইভ জিপিএস লোকেশন শনাক্ত করে নিকটবর্তী মসজিদগুলো দূরত্বের ক্রমানুসারে সাজান' 
-                        : 'Detects your live location and instantly sorts mosques from closest to furthest'}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handleRequestGps(true)}
-                  disabled={gpsLoading}
-                  className="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-emerald-950 font-extrabold text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-60 whitespace-nowrap"
-                >
-                  <Navigation className={`w-3.5 h-3.5 ${gpsLoading ? 'animate-spin' : ''}`} />
-                  <span>{gpsLoading ? (lang === 'bn' ? 'খোঁজা হচ্ছে...' : 'Locating...') : (lang === 'bn' ? '⚡ কাছের মসজিদ খুঁজুন' : '⚡ Find Nearby Mosques')}</span>
-                </button>
+            {/* Nearby Mosques Discovery CTA Card */}
+            <div className="bg-white border border-[#E4E9E5] rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(16,24,20,0.04)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-semibold text-base text-[#18211C]">
+                  {lang === 'bn' ? 'কাছের মসজিদ খুঁজুন' : 'Find Mosques Near You'}
+                </h3>
+                <p className="text-xs text-[#66706A] mt-0.5">
+                  {lang === 'bn' 
+                    ? 'আপনার অবস্থান শনাক্ত করে দূরত্বের ক্রমানুসারে নিকটবর্তী মসজিদগুলো সাজান।' 
+                    : 'Use your location to find nearby mosques sorted by distance.'}
+                </p>
               </div>
+
+              <button
+                onClick={() => handleRequestGps(true)}
+                disabled={gpsLoading}
+                className="w-full sm:w-auto px-4 py-2.5 bg-[#176B4D] hover:bg-[#124C39] text-white font-medium text-xs rounded-xl shadow-xs flex items-center justify-center gap-1.5 transition-colors active:scale-98 disabled:opacity-60 whitespace-nowrap self-stretch sm:self-auto"
+              >
+                <Navigation className={`w-3.5 h-3.5 ${gpsLoading ? 'animate-spin' : ''}`} />
+                <span>{gpsLoading ? (lang === 'bn' ? 'খোঁজা হচ্ছে...' : 'Locating...') : (lang === 'bn' ? 'কাছের মসজিদ খুঁজুন' : 'Find Nearby Mosques')}</span>
+              </button>
             </div>
 
-            {/* Expired Timetable Notification Notice (if any mosque has expired validity) */}
+            {/* Expired Timetable Notification Notice (Soft alert) */}
             {expiredCount > 0 && !expiredOnly && (
               <div 
                 onClick={() => setExpiredOnly(true)}
-                className="bg-rose-50 border border-rose-300 rounded-2xl p-3.5 flex items-center justify-between text-xs text-rose-900 cursor-pointer hover:bg-rose-100 transition-colors shadow-sm"
+                className="bg-[#FEF2F2] border border-[#FECACA] rounded-xl p-3.5 flex items-center justify-between gap-3 text-xs text-[#DC2626] cursor-pointer hover:bg-[#FEE2E2] transition-colors"
               >
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-rose-600 text-white flex items-center justify-center font-bold">
-                    <AlertTriangle className="w-4 h-4" />
-                  </div>
+                  <AlertTriangle className="w-4 h-4 text-[#DC2626] flex-shrink-0" />
                   <div>
-                    <h4 className="font-bold">
+                    <h4 className="font-semibold text-xs text-[#DC2626]">
                       {lang === 'bn' 
-                        ? `${expiredCount}টি মসজিদের সময়সূচি মেয়াদোত্তীর্ণ!` 
-                        : `${expiredCount} Mosque Timetables Need Updating!`}
+                        ? `${expiredCount}টি মসজিদের সময়সূচি হালনাগাদ প্রয়োজন` 
+                        : `${expiredCount} mosque timetables need updating`}
                     </h4>
-                    <p className="text-[11px] text-rose-700">
+                    <p className="text-[11px] text-[#991B1B]">
                       {lang === 'bn' 
-                        ? '১৫ দিনের মেয়াদ শেষ হয়েছে। নতুন সময়সূচি দেখার জন্য ক্লিক করুন।' 
-                        : '15-day validity cycle ended. Click to filter mosques needing update.'}
+                        ? '১৫ দিনের মেয়াদ শেষ হয়েছে। ফিল্টার করে দেখতে ক্লিক করুন।' 
+                        : '15-day validity cycle ended. Click to review mosques needing update.'}
                     </p>
                   </div>
                 </div>
-                <span className="text-[11px] font-bold bg-rose-600 text-white px-2.5 py-1 rounded-lg">
-                  {lang === 'bn' ? 'ফিল্টার' : 'Filter'}
+                <span className="text-[11px] font-medium text-[#DC2626] bg-white border border-[#FECACA] px-2.5 py-1 rounded-lg shadow-xs hover:bg-[#FEF2F2]">
+                  {lang === 'bn' ? 'ফিল্টার' : 'Review'}
                 </span>
               </div>
             )}
 
-            {/* Search and Division Filter Bar */}
-            <div ref={mosqueListRef} className="bg-white rounded-2xl p-3 border border-slate-200 shadow-sm space-y-3">
+            {/* Search and Division Filter Toolbar */}
+            <div ref={mosqueListRef} className="bg-white rounded-2xl p-4 border border-[#E4E9E5] shadow-[0_1px_3px_rgba(16,24,20,0.04)] space-y-3">
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Search className="w-4 h-4 text-[#8D9892] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder={lang === 'bn' ? 'মসজিদের নাম, থানা বা এলাকা দিয়ে খুঁজুন (যেমন: মিরপুর, বরিশাল)...' : 'Search mosque by name, area, road, or city (e.g., Mirpur, Barisal)...'}
-                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                    placeholder={lang === 'bn' ? 'মসজিদের নাম, থানা বা এলাকা দিয়ে খুঁজুন (যেমন: মিরপুর, বরিশাল)...' : 'Search mosque by name, area or road (e.g. Mirpur, Barisal)...'}
+                    className="w-full h-11 pl-10 pr-3 bg-white border border-[#E4E9E5] rounded-xl text-xs sm:text-sm text-[#18211C] placeholder:text-[#8D9892] focus:outline-none focus:ring-1 focus:ring-[#176B4D] focus:border-[#176B4D] transition-colors"
                   />
                 </div>
 
                 <button
                   onClick={fetchMosques}
-                  className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors"
+                  className="h-11 px-3 bg-white hover:bg-[#F8FAF9] text-[#66706A] hover:text-[#18211C] border border-[#E4E9E5] rounded-xl transition-colors flex items-center justify-center"
                   title="Refresh"
                 >
                   <RefreshCw className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Division Quick Filter Chips (Including Barisal!) */}
+              {/* Division Quick Filter Chips */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-                <span className="text-slate-400 font-semibold pl-1 flex items-center gap-1 text-[11px] flex-shrink-0">
+                <span className="text-[#8D9892] font-medium pl-1 flex items-center gap-1 text-[11px] flex-shrink-0">
                   <Filter className="w-3 h-3" />
                   <span>Division:</span>
                 </span>
@@ -311,10 +301,10 @@ export default function NearbyMasjidApp() {
                       setSelectedDivision(div);
                       setExpiredOnly(false);
                     }}
-                    className={`px-3 py-1 rounded-full font-semibold transition-all whitespace-nowrap ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap border ${
                       selectedDivision === div && !expiredOnly
-                        ? 'bg-emerald-900 text-white shadow-sm ring-1 ring-emerald-700'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                        ? 'bg-[#EEF6F2] text-[#176B4D] border-[#C2DFD2] font-semibold'
+                        : 'bg-white hover:bg-[#F8FAF9] text-[#66706A] border-[#E4E9E5]'
                     }`}
                   >
                     {div === 'Barisal' ? (lang === 'bn' ? 'বরিশাল' : 'Barisal') : div}
@@ -324,7 +314,7 @@ export default function NearbyMasjidApp() {
                 {expiredOnly && (
                   <button
                     onClick={() => setExpiredOnly(false)}
-                    className="px-3 py-1 rounded-full font-bold bg-rose-600 text-white flex items-center gap-1 whitespace-nowrap text-[11px]"
+                    className="px-3 py-1.5 rounded-lg font-medium bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA] flex items-center gap-1 whitespace-nowrap text-xs"
                   >
                     <span>Clear Expired Filter</span>
                     <span>×</span>
@@ -333,14 +323,14 @@ export default function NearbyMasjidApp() {
               </div>
 
               {/* Proximity / Distance Radius Filter */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pt-1 border-t border-slate-100 text-xs no-scrollbar">
-                <span className="text-slate-400 font-semibold pl-1 flex items-center gap-1 text-[11px] flex-shrink-0">
+              <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-[#E4E9E5] text-xs no-scrollbar">
+                <span className="text-[#8D9892] font-medium pl-1 flex items-center gap-1 text-[11px] flex-shrink-0">
                   <SlidersHorizontal className="w-3 h-3" />
                   <span>Distance:</span>
                 </span>
                 {[
                   { label: 'All Distances', labelBn: 'সকল দূরত্ব', max: null },
-                  { label: '< 500m (Walking)', labelBn: '< ৫০০মি (হাঁটার পথ)', max: 500 },
+                  { label: '< 500m', labelBn: '< ৫০০মি', max: 500 },
                   { label: '< 1 km', labelBn: '< ১ কিমি', max: 1000 },
                   { label: '< 3 km', labelBn: '< ৩ কিমি', max: 3000 },
                   { label: '< 5 km', labelBn: '< ৫ কিমি', max: 5000 },
@@ -348,10 +338,10 @@ export default function NearbyMasjidApp() {
                   <button
                     key={item.label}
                     onClick={() => setMaxDistanceMeters(item.max)}
-                    className={`px-2.5 py-0.5 rounded-lg text-[11px] font-medium transition-colors whitespace-nowrap ${
+                    className={`px-2.5 py-1 rounded-lg text-xs transition-colors whitespace-nowrap border ${
                       maxDistanceMeters === item.max
-                        ? 'bg-amber-500 text-emerald-950 font-bold'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                        ? 'bg-[#EEF6F2] text-[#176B4D] border-[#C2DFD2] font-semibold'
+                        : 'bg-white hover:bg-[#F8FAF9] text-[#66706A] border-[#E4E9E5] font-medium'
                     }`}
                   >
                     {lang === 'bn' ? item.labelBn : item.label}
@@ -363,73 +353,51 @@ export default function NearbyMasjidApp() {
             {/* Mosque Cards List Header */}
             <div className="flex items-center justify-between px-1">
               <div>
-                <h3 className="font-bold text-sm font-serif text-slate-900 flex items-center gap-1.5">
-                  <Compass className="w-4 h-4 text-emerald-800" />
-                  <span>{lang === 'bn' ? 'নিকটবর্তী মসজিদসমূহ' : 'Nearby Mosque List'}</span>
+                <h3 className="font-semibold text-base text-[#18211C] flex items-center gap-1.5">
+                  <Compass className="w-4 h-4 text-[#176B4D]" />
+                  <span>{lang === 'bn' ? 'নিকটবর্তী মসজিদসমূহ' : 'Nearby Mosques'}</span>
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#66706A]">
                   {lang === 'bn' 
-                    ? `${location.area} অনুযায়ী দূরত্ব অনুযায়ী সাজানো` 
+                    ? `${location.area} অনুযায়ী দূরত্বের ক্রমানুসারে সাজানো` 
                     : `Sorted by distance from ${location.area}`}
                 </p>
               </div>
 
-              <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+              <span className="text-xs font-semibold text-[#176B4D] bg-[#EEF6F2] border border-[#C2DFD2] px-2.5 py-1 rounded-full">
                 {displayedMosques.length} {lang === 'bn' ? 'মসজিদ' : 'Found'}
               </span>
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="bg-rose-50 border border-rose-300 rounded-2xl p-4 text-xs text-rose-900 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-rose-600 flex-shrink-0" />
+              <div className="bg-[#FEF2F2] border border-[#FECACA] rounded-xl p-4 text-xs text-[#DC2626] flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-[#DC2626] flex-shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
             {/* Mosque Cards Grid */}
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="bg-white rounded-2xl overflow-hidden border border-slate-200/90 shadow-sm animate-pulse flex flex-col">
-                    <div className="h-44 w-full bg-slate-200 relative">
-                      <div className="absolute top-3 left-3 w-28 h-6 bg-slate-300 rounded-full" />
-                      <div className="absolute top-3 right-3 w-20 h-6 bg-slate-300 rounded-full" />
-                      <div className="absolute bottom-3 left-3 right-16 space-y-2">
-                        <div className="h-5 bg-slate-300 rounded w-3/4" />
-                        <div className="h-3 bg-slate-300 rounded w-1/2" />
-                      </div>
-                    </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="bg-white rounded-[14px] overflow-hidden border border-[#E4E9E5] shadow-xs animate-pulse flex flex-col">
+                    <div className="h-44 w-full bg-slate-100 relative" />
                     <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                      <div className="bg-slate-100 rounded-xl p-3 flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                          <div className="w-9 h-9 rounded-xl bg-slate-200" />
-                          <div className="space-y-1.5">
-                            <div className="w-16 h-2.5 bg-slate-200 rounded" />
-                            <div className="w-24 h-4 bg-slate-200 rounded" />
-                          </div>
-                        </div>
-                        <div className="space-y-1.5">
-                          <div className="w-16 h-5 bg-slate-200 rounded ml-auto" />
-                          <div className="w-12 h-2.5 bg-slate-200 rounded ml-auto" />
-                        </div>
-                      </div>
-                      <div className="h-7 bg-slate-100 rounded-xl" />
-                      <div className="flex items-center gap-2 pt-1">
-                        <div className="h-10 bg-slate-200 rounded-xl flex-1" />
-                        <div className="h-10 bg-slate-100 rounded-xl w-24" />
-                      </div>
+                      <div className="h-12 bg-slate-100 rounded-xl" />
+                      <div className="h-6 bg-slate-100 rounded-lg" />
+                      <div className="h-8 bg-slate-100 rounded-lg" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : displayedMosques.length === 0 ? (
-              <div className="py-16 text-center bg-white rounded-3xl border border-slate-200 p-8 space-y-3">
-                <div className="text-4xl">🕌</div>
-                <h4 className="font-bold text-base text-slate-800">
+              <div className="py-16 text-center bg-white rounded-2xl border border-[#E4E9E5] p-8 space-y-3 shadow-[0_1px_3px_rgba(16,24,20,0.04)]">
+                <div className="text-3xl">🕌</div>
+                <h4 className="font-semibold text-base text-[#18211C]">
                   {lang === 'bn' ? 'কোনো মসজিদ পাওয়া যায়নি' : 'No Mosques Found'}
                 </h4>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                <p className="text-xs text-[#66706A] max-w-sm mx-auto">
                   {lang === 'bn' 
                     ? 'আপনার ফিল্টারের আওতায় কোনো মসজিদ পাওয়া যায়নি। অনুগ্রহ করে দূরত্ব বা বিভাগ পরিবর্তন করুন।' 
                     : 'Try clearing your search query or expanding the distance filter.'}
@@ -441,19 +409,19 @@ export default function NearbyMasjidApp() {
                     setExpiredOnly(false);
                     setMaxDistanceMeters(null);
                   }}
-                  className="px-4 py-2 bg-emerald-900 text-white rounded-xl text-xs font-bold"
+                  className="px-4 py-2 bg-[#176B4D] hover:bg-[#124C39] text-white rounded-xl text-xs font-medium transition-colors"
                 >
                   Reset Filters
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {displayedMosques.map((mosque, idx) => (
                   <div key={mosque.id} className="relative">
                     {/* Nearest badge on the top closest mosque */}
                     {idx === 0 && mosque.distance_meters !== undefined && (
-                      <div className="absolute -top-2.5 right-4 z-20 bg-amber-500 text-emerald-950 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1 border border-amber-300">
-                        <span>🏆 {lang === 'bn' ? 'সবচেয়ে কাছের মসজিদ' : 'Nearest Mosque'}</span>
+                      <div className="absolute -top-2.5 right-3 z-20 bg-[#EEF6F2] text-[#176B4D] px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wider border border-[#C2DFD2] shadow-xs">
+                        <span>{lang === 'bn' ? 'সবচেয়ে কাছের মসজিদ' : 'Closest Mosque'}</span>
                       </div>
                     )}
                     <MosqueCard
@@ -474,13 +442,13 @@ export default function NearbyMasjidApp() {
         {/* ========================================================= */}
         {activeTab === 'map' && (
           <div className="space-y-3">
-            <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex items-center justify-between">
+            <div className="bg-white rounded-2xl p-4 border border-[#E4E9E5] shadow-[0_1px_3px_rgba(16,24,20,0.04)] flex items-center justify-between">
               <div>
-                <h2 className="text-base font-bold font-serif text-slate-900 flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-emerald-800" />
+                <h2 className="text-base font-semibold text-[#18211C] flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-[#176B4D]" />
                   <span>{lang === 'bn' ? 'লাইভ মানচিত্রে মসজিদসমূহ' : 'Live Interactive Mosque Map'}</span>
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#66706A]">
                   {lang === 'bn' ? 'মানচিত্রের যেকোনো মসজিদে ক্লিক করে বিস্তারিত দেখুন' : 'Click on any mosque pin to view name, distance, and prayer times'}
                 </p>
               </div>
@@ -488,7 +456,7 @@ export default function NearbyMasjidApp() {
               <button
                 onClick={() => handleRequestGps(false)}
                 disabled={gpsLoading}
-                className="px-3 py-1.5 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm"
+                className="px-3.5 py-1.5 bg-[#176B4D] hover:bg-[#124C39] text-white rounded-xl text-xs font-medium flex items-center gap-1 shadow-xs transition-colors"
               >
                 <span>{gpsLoading ? 'Locating...' : 'Locate Me'}</span>
               </button>

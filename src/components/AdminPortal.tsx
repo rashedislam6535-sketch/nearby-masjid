@@ -433,22 +433,22 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
 
   return (
     <div className="space-y-4">
-      {/* Community Contributor Header Banner - Open for Everyone */}
-      <div className="bg-gradient-to-r from-emerald-950 via-teal-950 to-emerald-900 text-white rounded-2xl p-4 shadow-md border border-emerald-800 flex items-center justify-between">
+      {/* Community Contributor Header Banner */}
+      <div className="bg-white border border-[#E4E9E5] rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(16,24,20,0.04)] flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-amber-500 text-emerald-950 flex items-center justify-center font-bold shadow-md">
-            <Sparkles className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-[#EEF6F2] border border-[#C2DFD2] text-[#176B4D] flex items-center justify-center font-bold shadow-xs">
+            <Plus className="w-5 h-5 text-[#176B4D]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold font-serif">
+              <h2 className="text-base sm:text-lg font-semibold text-[#18211C]">
                 {lang === 'bn' ? 'মসজিদ ও সময়সূচি সংযোজন ও আপডেট' : 'Contribute Mosques & Prayer Timetables'}
               </h2>
-              <span className="text-[10px] bg-emerald-800 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-400/30">
+              <span className="text-[10px] bg-[#EEF6F2] text-[#176B4D] font-semibold px-2 py-0.5 rounded border border-[#C2DFD2]">
                 {lang === 'bn' ? 'উন্মুক্ত সেবা' : 'OPEN ACCESS'}
               </span>
             </div>
-            <p className="text-xs text-emerald-300">
+            <p className="text-xs text-[#66706A] mt-0.5">
               {lang === 'bn' 
                 ? 'যাত্রী বা সাধারণ মুসুল্লি—যেকোনো ব্যক্তি যেকোনো মসজিদের নতুন সময়সূচি বা নতুন মসজিদ যোগ ও আপডেট করতে পারেন' 
                 : 'Open for all: Passengers, travelers, and musallis can freely add mosques and update prayer times'}
@@ -459,7 +459,7 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
         {/* Refresh button */}
         <button
           onClick={onRefresh}
-          className="p-2 bg-emerald-900 hover:bg-emerald-800 rounded-xl text-emerald-200 hover:text-white transition-colors border border-emerald-700/60"
+          className="p-2 bg-white hover:bg-[#F8FAF9] rounded-xl text-[#66706A] hover:text-[#18211C] transition-colors border border-[#E4E9E5]"
           title="Refresh Data"
         >
           <RefreshCw className="w-4 h-4" />
@@ -467,40 +467,40 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
       </div>
 
       {/* Admin Navigation Tabs */}
-      <div className="grid grid-cols-3 gap-1 sm:gap-2 bg-slate-200/80 p-1 rounded-xl w-full">
+      <div className="grid grid-cols-3 gap-1 sm:gap-2 bg-[#F8FAF9] p-1 rounded-xl border border-[#E4E9E5] w-full">
         <button
           onClick={() => switchTab('ocr')}
-          className={`py-2 px-1.5 sm:px-3 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition-all text-center ${
+          className={`py-2 px-1.5 sm:px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all text-center ${
             activeTab === 'ocr'
-              ? 'bg-emerald-900 text-white shadow-sm'
-              : 'text-slate-700 hover:text-slate-900'
+              ? 'bg-white text-[#176B4D] font-semibold shadow-xs border border-[#E4E9E5]'
+              : 'text-[#66706A] hover:text-[#18211C]'
           }`}
         >
-          <Sparkles className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+          <Sparkles className="w-3.5 h-3.5 text-[#176B4D] flex-shrink-0" />
           <span className="truncate">{lang === 'bn' ? 'ওসিআর সময়সূচি' : 'OCR Timetable'}</span>
         </button>
 
         <button
           onClick={() => switchTab('add')}
-          className={`py-2 px-1.5 sm:px-3 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition-all text-center ${
+          className={`py-2 px-1.5 sm:px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all text-center ${
             activeTab === 'add'
-              ? 'bg-emerald-900 text-white shadow-sm'
-              : 'text-slate-700 hover:text-slate-900'
+              ? 'bg-white text-[#176B4D] font-semibold shadow-xs border border-[#E4E9E5]'
+              : 'text-[#66706A] hover:text-[#18211C]'
           }`}
         >
-          <Plus className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0" />
+          <Plus className="w-3.5 h-3.5 text-[#176B4D] flex-shrink-0" />
           <span className="truncate">{lang === 'bn' ? 'নতুন মসজিদ' : 'Add Mosque'}</span>
         </button>
 
         <button
           onClick={() => switchTab('list')}
-          className={`py-2 px-1.5 sm:px-3 rounded-lg text-[11px] sm:text-xs font-bold flex items-center justify-center gap-1 sm:gap-1.5 transition-all text-center ${
+          className={`py-2 px-1.5 sm:px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all text-center ${
             activeTab === 'list'
-              ? 'bg-emerald-900 text-white shadow-sm'
-              : 'text-slate-700 hover:text-slate-900'
+              ? 'bg-white text-[#176B4D] font-semibold shadow-xs border border-[#E4E9E5]'
+              : 'text-[#66706A] hover:text-[#18211C]'
           }`}
         >
-          <Trash2 className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+          <Trash2 className="w-3.5 h-3.5 text-[#DC2626] flex-shrink-0" />
           <span className="truncate">{lang === 'bn' ? 'মসজিদ মুছুন' : 'Remove'} ({mosques.length})</span>
         </button>
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Compass, Map, PlusCircle, Landmark } from 'lucide-react';
+import { Compass, Map, PlusCircle, Compass as QiblaIcon } from 'lucide-react';
 
 interface HeaderNavProps {
   activeTab: 'list' | 'map' | 'admin';
@@ -14,42 +14,42 @@ interface HeaderNavProps {
 
 export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang, expiredCount = 0 }: HeaderNavProps) {
   return (
-    <header className="sticky top-0 z-40 bg-emerald-950/95 backdrop-blur-md border-b border-emerald-800/50 shadow-md w-full">
-      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 w-full">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-sm border-b border-[#E4E9E5] h-16 w-full flex items-center shadow-[0_1px_2px_rgba(16,24,20,0.03)]">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 flex items-center justify-between gap-3 w-full">
         {/* App Logo & Name */}
         <div 
           onClick={() => setActiveTab('list')}
-          className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group min-w-0"
+          className="flex items-center gap-2.5 cursor-pointer group min-w-0"
         >
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl overflow-hidden shadow-sm shadow-amber-500/20 flex-shrink-0 flex items-center justify-center border border-amber-400/40">
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-[#E4E9E5] flex-shrink-0 flex items-center justify-center bg-[#EEF6F2] transition-colors group-hover:border-[#176B4D]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Nearby Masjid Logo" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+            <img src="/logo.png" alt="Nearby Masjid Logo" className="w-full h-full object-cover" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-base sm:text-lg tracking-tight text-white font-serif truncate">
+              <span className="font-semibold text-base sm:text-lg tracking-tight text-[#18211C] truncate">
                 Nearby Masjid
               </span>
-              <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 flex-shrink-0">
+              <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-[#EEF6F2] text-[#176B4D] border border-[#C2DFD2] flex-shrink-0">
                 BD
               </span>
             </div>
-            <p className="text-[11px] sm:text-xs text-emerald-300/80 -mt-0.5 truncate hidden sm:block">
+            <p className="text-xs text-[#66706A] -mt-0.5 truncate hidden sm:block">
               {lang === 'bn' ? 'কাছের মসজিদ ও নামাজের সময়সূচি' : 'Mosque Finder & Prayer Timetable'}
             </p>
           </div>
         </div>
 
-        {/* View Switcher & Language Toggle */}
-        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-          {/* Navigation Pill - Visible on desktop/tablet, mobile uses BottomNavBar */}
-          <nav className="hidden sm:flex items-center bg-emerald-900/80 rounded-xl p-1 border border-emerald-700/50">
+        {/* View Switcher & Secondary Utility Controls */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Main Navigation - Desktop/Tablet */}
+          <nav className="hidden sm:flex items-center gap-1 bg-[#F8FAF9] p-1 rounded-xl border border-[#E4E9E5]">
             <button
               onClick={() => setActiveTab('list')}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 activeTab === 'list'
-                  ? 'bg-amber-500 text-emerald-950 font-bold shadow-sm'
-                  : 'text-emerald-200 hover:text-white'
+                  ? 'bg-white text-[#176B4D] font-semibold shadow-xs border border-[#E4E9E5]'
+                  : 'text-[#66706A] hover:text-[#18211C] hover:bg-white/60'
               }`}
             >
               <Compass className="w-3.5 h-3.5" />
@@ -58,10 +58,10 @@ export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang,
 
             <button
               onClick={() => setActiveTab('map')}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 activeTab === 'map'
-                  ? 'bg-amber-500 text-emerald-950 font-bold shadow-sm'
-                  : 'text-emerald-200 hover:text-white'
+                  ? 'bg-white text-[#176B4D] font-semibold shadow-xs border border-[#E4E9E5]'
+                  : 'text-[#66706A] hover:text-[#18211C] hover:bg-white/60'
               }`}
             >
               <Map className="w-3.5 h-3.5" />
@@ -70,42 +70,40 @@ export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang,
 
             <button
               onClick={() => setActiveTab('admin')}
-              className={`relative flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              className={`relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 activeTab === 'admin'
-                  ? 'bg-amber-500 text-emerald-950 font-bold shadow-sm'
-                  : 'text-emerald-200 hover:text-white'
+                  ? 'bg-white text-[#176B4D] font-semibold shadow-xs border border-[#E4E9E5]'
+                  : 'text-[#66706A] hover:text-[#18211C] hover:bg-white/60'
               }`}
               title={lang === 'bn' ? 'নতুন মসজিদ যোগ করুন বা সময়সূচি হালনাগাদ করুন' : 'Add mosque or update prayer times'}
             >
               <PlusCircle className="w-3.5 h-3.5" />
               <span>{lang === 'bn' ? 'যোগ ও আপডেট' : 'Contribute'}</span>
               {expiredCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[9px] flex items-center justify-center font-bold animate-pulse">
-                  {expiredCount}
-                </span>
+                <span className="w-2 h-2 rounded-full bg-[#DC2626]" />
               )}
             </button>
           </nav>
 
-          {/* Qibla Compass Trigger Button - Desktop only, mobile has Qibla in BottomNavBar */}
+          {/* Qibla Compass Trigger Button - Secondary Utility Control */}
           {onOpenQibla && (
             <button
               onClick={onOpenQibla}
-              className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 transition-all active:scale-95 shadow-sm"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-white hover:bg-[#F8FAF9] text-[#18211C] border border-[#E4E9E5] transition-colors"
               title={lang === 'bn' ? 'কিবলা কম্পাস দেখুন' : 'Open Qibla Compass'}
             >
-              <span>🕋</span>
-              <span className="font-bold">{lang === 'bn' ? 'কিবলা' : 'Qibla'}</span>
+              <span className="text-sm leading-none">🧭</span>
+              <span>{lang === 'bn' ? 'কিবলা' : 'Qibla'}</span>
             </button>
           )}
 
-          {/* Language Switcher */}
+          {/* Language Switcher - Secondary Utility Control */}
           <button
             onClick={() => setLang(lang === 'en' ? 'bn' : 'en')}
-            className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-900/60 hover:bg-emerald-800 text-amber-300 border border-emerald-700/60 transition-colors"
+            className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white hover:bg-[#F8FAF9] text-[#66706A] hover:text-[#18211C] border border-[#E4E9E5] transition-colors"
             title="Toggle Language"
           >
-            {lang === 'en' ? 'বাংলা' : 'ENG'}
+            {lang === 'en' ? 'বাংলা' : 'EN'}
           </button>
         </div>
       </div>
