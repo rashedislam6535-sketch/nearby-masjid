@@ -5,22 +5,23 @@
 
 @layer base {
   :root {
-    --bg-page: #F8FAF9;
+    --bg-page: #F3F5F3;
     --surface-card: #FFFFFF;
-    --surface-subtle: #F2F5F3;
+    --surface-subtle: #EEF2EF;
     --text-primary: #18211C;
-    --text-secondary: #66706A;
-    --text-muted: #8D9892;
-    --border-color: #E4E9E5;
-    --border-hover: #D0D7D2;
-    --brand-green: #176B4D;
-    --brand-green-dark: #124C39;
-    --brand-green-surface: #EEF6F2;
+    --text-secondary: #5F6B64;
+    --text-muted: #88948D;
+    --border-color: #E2E8E4;
+    --border-hover: #CAD4CE;
+    --brand-green: #0B3B2C;
+    --brand-green-dark: #07261C;
+    --brand-green-surface: #F0F7F4;
     --brand-green-border: #C2DFD2;
-    --brand-gold: #C7963C;
-    --danger-surface: #FEF2F2;
-    --danger-border: #FECACA;
-    --danger-text: #DC2626;
+    --brand-gold: #F3BA47;
+    --brand-gold-subtle: #FAF5EB;
+    --danger-surface: #FFF7ED;
+    --danger-border: #FED7AA;
+    --danger-text: #C2410C;
   }
 }
 
@@ -32,7 +33,7 @@ html {
 }
 
 body {
-  background-color: #F8FAF9;
+  background-color: #F3F5F3;
   color: #18211C;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;

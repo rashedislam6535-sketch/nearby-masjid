@@ -20,12 +20,12 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
           onClick={() => setActiveTab('list')}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-colors ${
             activeTab === 'list'
-              ? 'text-[#176B4D] font-semibold'
-              : 'text-[#66706A] hover:text-[#18211C]'
+              ? 'text-[#0B3B2C] font-bold'
+              : 'text-[#5F6B64] hover:text-[#18211C]'
           }`}
         >
           <div className={`p-1 rounded-lg transition-colors ${
-            activeTab === 'list' ? 'bg-[#EEF6F2]' : ''
+            activeTab === 'list' ? 'bg-[#F0F7F4]' : ''
           }`}>
             <Compass className="w-5 h-5" />
           </div>
@@ -39,12 +39,12 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
           onClick={() => setActiveTab('map')}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-colors ${
             activeTab === 'map'
-              ? 'text-[#176B4D] font-semibold'
-              : 'text-[#66706A] hover:text-[#18211C]'
+              ? 'text-[#0B3B2C] font-bold'
+              : 'text-[#5F6B64] hover:text-[#18211C]'
           }`}
         >
           <div className={`p-1 rounded-lg transition-colors ${
-            activeTab === 'map' ? 'bg-[#EEF6F2]' : ''
+            activeTab === 'map' ? 'bg-[#F0F7F4]' : ''
           }`}>
             <Map className="w-5 h-5" />
           </div>
