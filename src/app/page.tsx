@@ -9,7 +9,6 @@ import { AdminPortal } from '@/components/AdminPortal';
 import { MasjidMap } from '@/components/MasjidMap';
 import { BottomNavBar } from '@/components/BottomNavBar';
 import { QiblaCompassModal } from '@/components/QiblaCompassModal';
-import { DailySalatTracker } from '@/components/DailySalatTracker';
 import { MosqueData } from '@/types/masjid';
 import { Search, Filter, AlertTriangle, RefreshCw, Compass, MapPin, Navigation, Sparkles, SlidersHorizontal } from 'lucide-react';
 import { BD_LOCATION_PRESETS } from '@/lib/geoUtils';
@@ -212,12 +211,6 @@ export default function NearbyMasjidApp() {
               onLocationChange={setLocation}
               onRequestGps={() => handleRequestGps(false)}
               gpsLoading={gpsLoading}
-              activeMosquePrayer={activeMosquePrayer}
-              lang={lang}
-            />
-
-            {/* Today's Daily Salat Done Tracker with Checkboxes */}
-            <DailySalatTracker
               activeMosquePrayer={activeMosquePrayer}
               lang={lang}
             />
