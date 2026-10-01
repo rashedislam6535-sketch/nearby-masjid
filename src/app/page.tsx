@@ -185,7 +185,7 @@ export default function NearbyMasjidApp() {
   const activeMosquePrayer = displayedMosques[0]?.prayer || mosques[0]?.prayer;
 
   return (
-    <div className="min-h-screen bg-[#F3F5F3] flex flex-col text-[#18211C] selection:bg-[#F0F7F4] selection:text-[#0B3B2C] overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen bg-[var(--bg-page)] flex flex-col text-[var(--text-primary)] selection:bg-[#F0F7F4] selection:text-[#0B3B2C] overflow-x-hidden w-full max-w-full transition-colors duration-200">
       {/* Top Header Navigation */}
       <HeaderNav
         activeTab={activeTab}
@@ -216,16 +216,22 @@ export default function NearbyMasjidApp() {
             />
 
             {/* Nearby Mosques Discovery CTA Card */}
-            <div className="bg-gradient-to-r from-[#F0F7F4] via-[#F6FAF8] to-[#F0F7F4] border border-[#C2DFD2] rounded-2xl p-4 sm:p-5 shadow-[0_2px_6px_rgba(11,59,44,0.03)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div 
+              className="border rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors"
+              style={{
+                backgroundColor: 'var(--brand-green-surface)',
+                borderColor: 'var(--brand-green-border)'
+              }}
+            >
               <div className="flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-xl bg-[#0B3B2C] text-[#F3BA47] flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0">
                   📍
                 </div>
                 <div>
-                  <h3 className="font-bold text-base text-[#18211C]">
+                  <h3 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>
                     {lang === 'bn' ? 'কাছের মসজিদগুলো দেখুন' : 'Find Mosques Near You'}
                   </h3>
-                  <p className="text-xs text-[#5F6B64] mt-0.5">
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                     {lang === 'bn' 
                       ? 'লাইভ জিপিএস অবস্থান ব্যবহার করে দূরত্বের ক্রমানুসারে নিকটবর্তী মসজিদগুলো সাজান।' 
                       : 'Detects your live location and sorts mosques from closest to furthest.'}
@@ -273,22 +279,39 @@ export default function NearbyMasjidApp() {
             )}
 
             {/* Search and Division Filter Toolbar */}
-            <div ref={mosqueListRef} className="bg-white rounded-2xl p-4 border border-[#E2E8E4] shadow-[0_2px_8px_rgba(0,0,0,0.03)] space-y-3.5">
+            <div 
+              ref={mosqueListRef} 
+              className="rounded-2xl p-4 border shadow-xs space-y-3.5 transition-colors"
+              style={{
+                backgroundColor: 'var(--surface-card)',
+                borderColor: 'var(--border-color)'
+              }}
+            >
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-[#88948D] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={lang === 'bn' ? 'মসজিদের নাম, থানা বা এলাকা দিয়ে খুঁজুন (যেমন: মিরপুর, বরিশাল)...' : 'Search mosque by name, area or road (e.g. Mirpur, Barisal)...'}
-                    className="w-full h-11 pl-10 pr-3 bg-white border border-[#E2E8E4] rounded-xl text-xs sm:text-sm text-[#18211C] placeholder:text-[#88948D] focus:outline-none focus:ring-2 focus:ring-[#0B3B2C]/20 focus:border-[#0B3B2C] transition-colors"
+                    className="w-full h-11 pl-10 pr-3 rounded-xl text-xs sm:text-sm border focus:outline-none focus:ring-2 focus:ring-[#0B3B2C]/20 transition-colors"
+                    style={{
+                      backgroundColor: 'var(--surface-subtle)',
+                      borderColor: 'var(--border-color)',
+                      color: 'var(--text-primary)'
+                    }}
                   />
                 </div>
 
                 <button
                   onClick={fetchMosques}
-                  className="h-11 px-3.5 bg-white hover:bg-[#F3F5F3] text-[#5F6B64] hover:text-[#18211C] border border-[#E2E8E4] rounded-xl transition-colors flex items-center justify-center shadow-2xs"
+                  className="h-11 px-3.5 rounded-xl border transition-colors flex items-center justify-center shadow-2xs hover:opacity-80"
+                  style={{
+                    backgroundColor: 'var(--surface-subtle)',
+                    borderColor: 'var(--border-color)',
+                    color: 'var(--text-secondary)'
+                  }}
                   title="Refresh"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -297,26 +320,34 @@ export default function NearbyMasjidApp() {
 
               {/* Division Quick Filter Chips */}
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
-                <span className="text-[#88948D] font-bold pl-1 flex items-center gap-1 text-[11px] flex-shrink-0">
+                <span className="font-bold pl-1 flex items-center gap-1 text-[11px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
                   <Filter className="w-3 h-3" />
                   <span>Division:</span>
                 </span>
-                {['All', 'Dhaka', 'Barisal', 'Chittagong', 'Sylhet', 'Khulna', 'Rajshahi'].map((div) => (
-                  <button
-                    key={div}
-                    onClick={() => {
-                      setSelectedDivision(div);
-                      setExpiredOnly(false);
-                    }}
-                    className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap border ${
-                      selectedDivision === div && !expiredOnly
-                        ? 'bg-[#0B3B2C] text-white border-[#0B3B2C] shadow-xs'
-                        : 'bg-white hover:bg-[#F0F7F4] text-[#5F6B64] border-[#E2E8E4]'
-                    }`}
-                  >
-                    {div === 'Barisal' ? (lang === 'bn' ? 'বরিশাল' : 'Barisal') : div}
-                  </button>
-                ))}
+                {['All', 'Dhaka', 'Barisal', 'Chittagong', 'Sylhet', 'Khulna', 'Rajshahi'].map((div) => {
+                  const isActive = selectedDivision === div && !expiredOnly;
+                  return (
+                    <button
+                      key={div}
+                      onClick={() => {
+                        setSelectedDivision(div);
+                        setExpiredOnly(false);
+                      }}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap border ${
+                        isActive
+                          ? 'bg-[#0B3B2C] text-white border-[#0B3B2C] shadow-xs'
+                          : 'hover:opacity-80'
+                      }`}
+                      style={!isActive ? {
+                        backgroundColor: 'var(--surface-subtle)',
+                        borderColor: 'var(--border-color)',
+                        color: 'var(--text-secondary)'
+                      } : undefined}
+                    >
+                      {div === 'Barisal' ? (lang === 'bn' ? 'বরিশাল' : 'Barisal') : div}
+                    </button>
+                  );
+                })}
 
                 {expiredOnly && (
                   <button
@@ -330,8 +361,8 @@ export default function NearbyMasjidApp() {
               </div>
 
               {/* Proximity / Distance Radius Filter */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-[#E2E8E4] text-xs no-scrollbar">
-                <span className="text-[#88948D] font-bold pl-1 flex items-center gap-1 text-[11px] flex-shrink-0">
+              <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t text-xs no-scrollbar" style={{ borderColor: 'var(--border-color)' }}>
+                <span className="font-bold pl-1 flex items-center gap-1 text-[11px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
                   <SlidersHorizontal className="w-3 h-3" />
                   <span>Distance:</span>
                 </span>
@@ -341,37 +372,52 @@ export default function NearbyMasjidApp() {
                   { label: '< 1 km', labelBn: '< ১ কিমি', max: 1000 },
                   { label: '< 3 km', labelBn: '< ৩ কিমি', max: 3000 },
                   { label: '< 5 km', labelBn: '< ৫ কিমি', max: 5000 },
-                ].map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => setMaxDistanceMeters(item.max)}
-                    className={`px-3 py-1 rounded-lg text-xs transition-colors whitespace-nowrap border font-medium ${
-                      maxDistanceMeters === item.max
-                        ? 'bg-[#0B3B2C] text-white border-[#0B3B2C] font-bold shadow-xs'
-                        : 'bg-white hover:bg-[#F0F7F4] text-[#5F6B64] border-[#E2E8E4]'
-                    }`}
-                  >
-                    {lang === 'bn' ? item.labelBn : item.label}
-                  </button>
-                ))}
+                ].map((item) => {
+                  const isActive = maxDistanceMeters === item.max;
+                  return (
+                    <button
+                      key={item.label}
+                      onClick={() => setMaxDistanceMeters(item.max)}
+                      className={`px-3 py-1 rounded-lg text-xs transition-colors whitespace-nowrap border font-medium ${
+                        isActive
+                          ? 'bg-[#0B3B2C] text-white border-[#0B3B2C] font-bold shadow-xs'
+                          : 'hover:opacity-80'
+                      }`}
+                      style={!isActive ? {
+                        backgroundColor: 'var(--surface-subtle)',
+                        borderColor: 'var(--border-color)',
+                        color: 'var(--text-secondary)'
+                      } : undefined}
+                    >
+                      {lang === 'bn' ? item.labelBn : item.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
             {/* Mosque Cards List Header */}
             <div className="flex items-center justify-between px-1">
               <div>
-                <h3 className="font-bold text-base text-[#18211C] flex items-center gap-2">
-                  <Compass className="w-4 h-4 text-[#0B3B2C]" />
+                <h3 className="font-bold text-base flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                  <Compass className="w-4 h-4" style={{ color: 'var(--brand-green)' }} />
                   <span>{lang === 'bn' ? 'নিকটবর্তী মসজিদসমূহ' : 'Nearby Mosques'}</span>
                 </h3>
-                <p className="text-xs text-[#5F6B64]">
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                   {lang === 'bn' 
                     ? `${location.area} অনুযায়ী দূরত্বের ক্রমানুসারে সাজানো` 
                     : `Sorted by distance from ${location.area}`}
                 </p>
               </div>
 
-              <span className="text-xs font-bold text-[#854D0E] bg-[#FEF9C3] border border-[#FDE047]/60 px-3 py-1 rounded-full shadow-2xs">
+              <span 
+                className="text-xs font-bold px-3 py-1 rounded-full border shadow-2xs"
+                style={{
+                  backgroundColor: 'var(--brand-gold-surface)',
+                  color: 'var(--brand-gold-text)',
+                  borderColor: 'var(--brand-gold-border)'
+                }}
+              >
                 {displayedMosques.length} {lang === 'bn' ? 'মসজিদ' : 'Found'}
               </span>
             </div>
@@ -520,13 +566,20 @@ export default function NearbyMasjidApp() {
       )}
 
       {/* Subtle Footer */}
-      <footer className="border-t border-slate-200 bg-white/70 py-4 mt-8 text-center text-xs text-slate-500">
+      <footer 
+        className="border-t py-4 mt-8 text-center text-xs transition-colors"
+        style={{
+          backgroundColor: 'var(--header-bg)',
+          borderColor: 'var(--border-color)',
+          color: 'var(--text-secondary)'
+        }}
+      >
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5 font-serif font-bold text-emerald-950">
+          <div className="flex items-center gap-1.5 font-serif font-bold" style={{ color: 'var(--text-primary)' }}>
             <span>Nearby Masjid</span>
-            <span className="text-[10px] text-amber-600 font-mono font-normal">v1.0 Production BD</span>
+            <span className="text-[10px] font-mono font-normal" style={{ color: 'var(--brand-gold-text)' }}>v1.0 Production BD</span>
           </div>
-          <div className="text-[11px] text-slate-400">
+          <div className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
             PostgreSQL Database (Supabase) • Live GPS • Barisal & All Divisions • AI OCR Timetable Reader
           </div>
         </div>

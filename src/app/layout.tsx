@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 export const metadata: Metadata = {
   title: "Nearby Masjid — Mosque Finder & Prayer Timetable BD",
@@ -22,7 +23,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#064e3b"
+  themeColor: "#0B3B2C"
 };
 
 export default function RootLayout({
@@ -40,6 +41,12 @@ export default function RootLayout({
         <link
           href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Amiri:wght@400;700&display=swap"
           rel="stylesheet"
+        />
+        {/* Anti-flash theme script */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('nearby_masjid_theme')||'light';document.documentElement.setAttribute('data-theme',t);document.documentElement.classList.add(t);}catch(e){}})();`,
+          }}
         />
         <script
           type="application/ld+json"
@@ -71,8 +78,10 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="bg-slate-50 text-slate-900 min-h-screen selection:bg-amber-400 selection:text-emerald-950 font-sans">
-        {children}
+      <body className="bg-[var(--bg-page)] text-[var(--text-primary)] min-h-screen selection:bg-amber-400 selection:text-emerald-950 font-sans transition-colors duration-200">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

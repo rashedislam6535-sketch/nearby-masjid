@@ -37,7 +37,14 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
   const qibla = calculateQiblaBearing(mosque.latitude, mosque.longitude);
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E2E8E4] shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:border-[#0B3B2C]/40 hover:shadow-[0_6px_20px_rgba(11,59,44,0.07)] transition-all flex flex-col overflow-hidden group">
+    <div 
+      className="rounded-2xl border shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all flex flex-col overflow-hidden group hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+      style={{
+        backgroundColor: 'var(--surface-card)',
+        borderColor: 'var(--border-color)',
+        color: 'var(--text-primary)',
+      }}
+    >
       {/* Mosque Cover Image Header */}
       <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -49,7 +56,7 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
         />
 
         {/* Minimal Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
 
         {/* Distance Badge */}
         {mosque.distance_text && (
@@ -88,28 +95,34 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
       {/* Card Body */}
       <div className="p-4 flex-1 flex flex-col justify-between space-y-3.5">
         {/* Next Prayer Highlight Box */}
-        <div className="bg-[#F0F7F4] rounded-xl p-3 border border-[#C2DFD2] flex items-center justify-between">
+        <div 
+          className="rounded-xl p-3 border flex items-center justify-between"
+          style={{
+            backgroundColor: 'var(--brand-green-surface)',
+            borderColor: 'var(--brand-green-border)'
+          }}
+        >
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#0B3B2C]">
+            <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--brand-green)' }}>
               {lang === 'bn' ? 'পরবর্তী ওয়াক্ত' : 'Next Prayer'}
             </span>
-            <div className="text-sm font-bold text-[#18211C] leading-tight font-serif">
+            <div className="text-sm font-bold leading-tight font-serif" style={{ color: 'var(--text-primary)' }}>
               {lang === 'bn' ? tracking.nextPrayer.nameBn : tracking.nextPrayer.nameEn}
             </div>
           </div>
 
           <div className="text-right">
-            <div className="text-sm font-extrabold text-[#0B3B2C] font-mono">
+            <div className="text-sm font-extrabold font-mono" style={{ color: 'var(--brand-green)' }}>
               {tracking.nextPrayerTimeFormatted}
             </div>
-            <div className="text-[10px] text-[#5F6B64] font-medium">
+            <div className="text-[10px] font-medium" style={{ color: 'var(--text-secondary)' }}>
               {tracking.countdownText}
             </div>
           </div>
         </div>
 
         {/* 5 Daily Prayers Strip */}
-        <div className="grid grid-cols-5 gap-1 pt-1.5 border-t border-[#E2E8E4] text-[10px]">
+        <div className="grid grid-cols-5 gap-1 pt-1.5 border-t text-[10px]" style={{ borderColor: 'var(--border-color)' }}>
           {[
             { key: 'Fajr', bn: 'ফজর', time: prayer.fajr },
             { key: 'Dhuhr', bn: 'যোহর', time: prayer.dhuhr },
@@ -118,16 +131,20 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
             { key: 'Isha', bn: 'এশা', time: prayer.isha },
           ].map((item) => (
             <div key={item.key} className="text-center">
-              <span className="text-[#5F6B64] block font-semibold truncate">{lang === 'bn' ? item.bn : item.key}</span>
-              <span className="font-bold text-[#18211C] font-mono block truncate mt-0.5">{item.time.split(' ')[0]}</span>
+              <span className="block font-semibold truncate" style={{ color: 'var(--text-secondary)' }}>
+                {lang === 'bn' ? item.bn : item.key}
+              </span>
+              <span className="font-bold font-mono block truncate mt-0.5" style={{ color: 'var(--text-primary)' }}>
+                {item.time.split(' ')[0]}
+              </span>
             </div>
           ))}
         </div>
 
         {/* Footer: Qibla & View Details CTA */}
-        <div className="pt-2.5 border-t border-[#E2E8E4] flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1 text-[11px] text-[#5F6B64]">
-            <Compass className="w-3.5 h-3.5 text-[#0B3B2C]" />
+        <div className="pt-2.5 border-t flex items-center justify-between gap-2" style={{ borderColor: 'var(--border-color)' }}>
+          <div className="flex items-center gap-1 text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+            <Compass className="w-3.5 h-3.5" style={{ color: 'var(--brand-green)' }} />
             <span>Qibla {qibla.degrees}° {qibla.compassDirection}</span>
           </div>
 

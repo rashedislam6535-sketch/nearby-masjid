@@ -434,21 +434,42 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
   return (
     <div className="space-y-4">
       {/* Community Contributor Header Banner */}
-      <div className="bg-white border border-[#E4E9E5] rounded-2xl p-4 sm:p-5 shadow-[0_1px_3px_rgba(16,24,20,0.04)] flex items-center justify-between">
+      <div 
+        className="rounded-2xl p-4 sm:p-5 border shadow-xs flex items-center justify-between transition-colors"
+        style={{
+          backgroundColor: 'var(--surface-card)',
+          borderColor: 'var(--border-color)',
+          color: 'var(--text-primary)'
+        }}
+      >
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#EEF6F2] border border-[#C2DFD2] text-[#176B4D] flex items-center justify-center font-bold shadow-xs">
-            <Plus className="w-5 h-5 text-[#176B4D]" />
+          <div 
+            className="w-10 h-10 rounded-xl border flex items-center justify-center font-bold shadow-xs flex-shrink-0"
+            style={{
+              backgroundColor: 'var(--brand-green-surface)',
+              borderColor: 'var(--brand-green-border)',
+              color: 'var(--brand-green)'
+            }}
+          >
+            <Plus className="w-5 h-5" style={{ color: 'var(--brand-green)' }} />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base sm:text-lg font-semibold text-[#18211C]">
+              <h2 className="text-base sm:text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
                 {lang === 'bn' ? 'মসজিদ ও সময়সূচি সংযোজন ও আপডেট' : 'Contribute Mosques & Prayer Timetables'}
               </h2>
-              <span className="text-[10px] bg-[#EEF6F2] text-[#176B4D] font-semibold px-2 py-0.5 rounded border border-[#C2DFD2]">
+              <span 
+                className="text-[10px] font-semibold px-2 py-0.5 rounded border"
+                style={{
+                  backgroundColor: 'var(--brand-green-surface)',
+                  color: 'var(--brand-green)',
+                  borderColor: 'var(--brand-green-border)'
+                }}
+              >
                 {lang === 'bn' ? 'উন্মুক্ত সেবা' : 'OPEN ACCESS'}
               </span>
             </div>
-            <p className="text-xs text-[#66706A] mt-0.5">
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
               {lang === 'bn' 
                 ? 'যাত্রী বা সাধারণ মুসুল্লি—যেকোনো ব্যক্তি যেকোনো মসজিদের নতুন সময়সূচি বা নতুন মসজিদ যোগ ও আপডেট করতে পারেন' 
                 : 'Open for all: Passengers, travelers, and musallis can freely add mosques and update prayer times'}
@@ -459,7 +480,12 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
         {/* Refresh button */}
         <button
           onClick={onRefresh}
-          className="p-2 bg-white hover:bg-[#F8FAF9] rounded-xl text-[#66706A] hover:text-[#18211C] transition-colors border border-[#E4E9E5]"
+          className="p-2 rounded-xl transition-colors border"
+          style={{
+            backgroundColor: 'var(--surface-subtle)',
+            borderColor: 'var(--border-color)',
+            color: 'var(--text-secondary)'
+          }}
           title="Refresh Data"
         >
           <RefreshCw className="w-4 h-4" />
@@ -467,16 +493,23 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
       </div>
 
       {/* Admin Navigation Tabs */}
-      <div className="grid grid-cols-3 gap-1 sm:gap-2 bg-[#F8FAF9] p-1 rounded-xl border border-[#E4E9E5] w-full">
+      <div 
+        className="grid grid-cols-3 gap-1 sm:gap-2 p-1 rounded-xl border w-full"
+        style={{
+          backgroundColor: 'var(--surface-subtle)',
+          borderColor: 'var(--border-color)'
+        }}
+      >
         <button
           onClick={() => switchTab('ocr')}
           className={`py-2 px-1.5 sm:px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all text-center ${
             activeTab === 'ocr'
-              ? 'bg-white text-[#176B4D] font-semibold shadow-xs border border-[#E4E9E5]'
-              : 'text-[#66706A] hover:text-[#18211C]'
+              ? 'bg-[#0B3B2C] text-white font-semibold shadow-xs'
+              : 'hover:opacity-80'
           }`}
+          style={activeTab !== 'ocr' ? { color: 'var(--text-secondary)' } : undefined}
         >
-          <Sparkles className="w-3.5 h-3.5 text-[#176B4D] flex-shrink-0" />
+          <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">{lang === 'bn' ? 'ওসিআর সময়সূচি' : 'OCR Timetable'}</span>
         </button>
 
@@ -484,11 +517,12 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
           onClick={() => switchTab('add')}
           className={`py-2 px-1.5 sm:px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all text-center ${
             activeTab === 'add'
-              ? 'bg-white text-[#176B4D] font-semibold shadow-xs border border-[#E4E9E5]'
-              : 'text-[#66706A] hover:text-[#18211C]'
+              ? 'bg-[#0B3B2C] text-white font-semibold shadow-xs'
+              : 'hover:opacity-80'
           }`}
+          style={activeTab !== 'add' ? { color: 'var(--text-secondary)' } : undefined}
         >
-          <Plus className="w-3.5 h-3.5 text-[#176B4D] flex-shrink-0" />
+          <Plus className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">{lang === 'bn' ? 'নতুন মসজিদ' : 'Add Mosque'}</span>
         </button>
 
@@ -496,11 +530,12 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
           onClick={() => switchTab('list')}
           className={`py-2 px-1.5 sm:px-3 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all text-center ${
             activeTab === 'list'
-              ? 'bg-white text-[#176B4D] font-semibold shadow-xs border border-[#E4E9E5]'
-              : 'text-[#66706A] hover:text-[#18211C]'
+              ? 'bg-[#0B3B2C] text-white font-semibold shadow-xs'
+              : 'hover:opacity-80'
           }`}
+          style={activeTab !== 'list' ? { color: 'var(--text-secondary)' } : undefined}
         >
-          <Trash2 className="w-3.5 h-3.5 text-[#DC2626] flex-shrink-0" />
+          <Trash2 className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">{lang === 'bn' ? 'মসজিদ মুছুন' : 'Remove'} ({mosques.length})</span>
         </button>
       </div>

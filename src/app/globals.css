@@ -4,24 +4,77 @@
 @import "leaflet/dist/leaflet.css";
 
 @layer base {
-  :root {
+  :root,
+  [data-theme="light"],
+  .light {
     --bg-page: #F3F5F3;
     --surface-card: #FFFFFF;
     --surface-subtle: #EEF2EF;
-    --text-primary: #18211C;
-    --text-secondary: #5F6B64;
-    --text-muted: #88948D;
-    --border-color: #E2E8E4;
-    --border-hover: #CAD4CE;
+    --surface-muted: #E2E8E4;
+    --text-primary: #151F19;
+    --text-secondary: #57655E;
+    --text-muted: #7E8E85;
+    --border-color: #E0E7E2;
+    --border-hover: #C5D3CB;
     --brand-green: #0B3B2C;
-    --brand-green-dark: #07261C;
+    --brand-green-hover: #07261C;
     --brand-green-surface: #F0F7F4;
     --brand-green-border: #C2DFD2;
-    --brand-gold: #F3BA47;
-    --brand-gold-subtle: #FAF5EB;
-    --danger-surface: #FFF7ED;
-    --danger-border: #FED7AA;
-    --danger-text: #C2410C;
+    --brand-gold: #D97706;
+    --brand-gold-surface: #FEF9C3;
+    --brand-gold-text: #854D0E;
+    --brand-gold-border: rgba(253, 224, 71, 0.7);
+    --header-bg: rgba(255, 255, 255, 0.94);
+    --modal-bg: #FFFFFF;
+    --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  [data-theme="dim"],
+  .dim {
+    --bg-page: #121A16;
+    --surface-card: #1A2520;
+    --surface-subtle: #22302A;
+    --surface-muted: #2A3C34;
+    --text-primary: #EEF4F1;
+    --text-secondary: #A3B5AC;
+    --text-muted: #72857B;
+    --border-color: #273830;
+    --border-hover: #3B5347;
+    --brand-green: #10B981;
+    --brand-green-hover: #34D399;
+    --brand-green-surface: #142A21;
+    --brand-green-border: #1E4D3B;
+    --brand-gold: #FBBF24;
+    --brand-gold-surface: #2E2816;
+    --brand-gold-text: #FDE047;
+    --brand-gold-border: rgba(245, 158, 11, 0.4);
+    --header-bg: rgba(26, 37, 32, 0.94);
+    --modal-bg: #1A2520;
+    --card-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  }
+
+  [data-theme="dark"],
+  .dark {
+    --bg-page: #080C0A;
+    --surface-card: #0F1612;
+    --surface-subtle: #17211C;
+    --surface-muted: #1E2B24;
+    --text-primary: #F3F8F5;
+    --text-secondary: #98A89F;
+    --text-muted: #64736B;
+    --border-color: #1B2720;
+    --border-hover: #2B3D32;
+    --brand-green: #34D399;
+    --brand-green-hover: #6EE7B7;
+    --brand-green-surface: #0E241B;
+    --brand-green-border: #174734;
+    --brand-gold: #F59E0B;
+    --brand-gold-surface: #261D09;
+    --brand-gold-text: #FBBF24;
+    --brand-gold-border: rgba(245, 158, 11, 0.35);
+    --header-bg: rgba(15, 22, 18, 0.95);
+    --modal-bg: #0F1612;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
   }
 }
 
@@ -33,22 +86,25 @@ html {
 }
 
 body {
-  background-color: #F3F5F3;
-  color: #18211C;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
   max-width: 100vw;
   width: 100%;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Subtle, clean utility cards & surfaces */
 .card-surface {
-  background-color: #FFFFFF;
-  border: 1px solid #E4E9E5;
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(16, 24, 20, 0.04);
+  box-shadow: var(--card-shadow);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .card-surface-hover {
@@ -56,8 +112,8 @@ body {
 }
 
 .card-surface-hover:hover {
-  border-color: #C2DFD2;
-  box-shadow: 0 4px 12px rgba(16, 24, 20, 0.06);
+  border-color: var(--border-hover);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 /* Custom pulse for running prayer */

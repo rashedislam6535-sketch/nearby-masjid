@@ -52,8 +52,15 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-sm overflow-hidden">
-      <div className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden w-full max-w-xl max-h-[92vh] sm:max-h-[88vh] shadow-2xl border border-slate-200/80 flex flex-col animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-sm overflow-hidden">
+      <div 
+        className="rounded-2xl sm:rounded-3xl overflow-hidden w-full max-w-xl max-h-[92vh] sm:max-h-[88vh] shadow-2xl border flex flex-col animate-in fade-in zoom-in-95 duration-200"
+        style={{
+          backgroundColor: 'var(--surface-card)',
+          borderColor: 'var(--border-color)',
+          color: 'var(--text-primary)'
+        }}
+      >
         
         {/* Cover Image & Header */}
         <div className="relative h-44 sm:h-52 w-full bg-emerald-950 flex-shrink-0">
@@ -141,27 +148,46 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
           </div>
 
           {/* Qibla Direction & Kaaba Bearing */}
-          <div className="bg-white rounded-2xl p-4 border border-[#E4E9E5] shadow-[0_1px_3px_rgba(16,24,20,0.04)] flex items-center justify-between">
+          <div 
+            className="rounded-2xl p-4 border shadow-xs flex items-center justify-between transition-colors"
+            style={{
+              backgroundColor: 'var(--surface-subtle)',
+              borderColor: 'var(--border-color)'
+            }}
+          >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#EEF6F2] border border-[#C2DFD2] flex items-center justify-center font-bold flex-shrink-0">
-                <Compass className="w-5 h-5 text-[#176B4D]" style={{ transform: `rotate(${qibla.degrees}deg)` }} />
+              <div 
+                className="w-10 h-10 rounded-xl border flex items-center justify-center font-bold flex-shrink-0"
+                style={{
+                  backgroundColor: 'var(--brand-green-surface)',
+                  borderColor: 'var(--brand-green-border)'
+                }}
+              >
+                <Compass className="w-5 h-5" style={{ color: 'var(--brand-green)', transform: `rotate(${qibla.degrees}deg)` }} />
               </div>
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-[#66706A]">
+                <h4 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                   {lang === 'bn' ? 'কিবলার দিকনির্দেশ (মক্কার কা\'বা)' : 'Qibla Bearing (Kaaba Direction)'}
                 </h4>
-                <p className="text-sm font-bold text-[#18211C] mt-0.5">
+                <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>
                   {qibla.degrees}° {qibla.compassDirection} {lang === 'bn' ? '(পশ্চিম কোণ)' : '(West-Northwest)'}
                 </p>
               </div>
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] font-semibold bg-[#EEF6F2] text-[#176B4D] px-2.5 py-1 rounded-full border border-[#C2DFD2]">
+              <span 
+                className="text-[10px] font-semibold px-2.5 py-1 rounded-full border"
+                style={{
+                  backgroundColor: 'var(--brand-green-surface)',
+                  color: 'var(--brand-green)',
+                  borderColor: 'var(--brand-green-border)'
+                }}
+              >
                 {lang === 'bn' ? 'সঠিক কম্পাস' : 'True Bearing'}
               </span>
               {mosque.distance_text && (
-                <p className="text-[11px] text-[#66706A] mt-1">
+                <p className="text-[11px] mt-1" style={{ color: 'var(--text-secondary)' }}>
                   {lang === 'bn' ? 'দূরত্ব:' : 'Dist:'} {mosque.distance_text}
                 </p>
               )}
@@ -169,11 +195,16 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
           </div>
 
           {/* 15-Day Timetable Validity Banner */}
-          <div className={`rounded-2xl p-4 border ${
-            validity.isExpired 
-              ? 'bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]' 
-              : 'bg-white border-[#E4E9E5] text-[#18211C] shadow-[0_1px_3px_rgba(16,24,20,0.04)]'
-          }`}>
+          <div 
+            className={`rounded-2xl p-4 border transition-colors ${
+              validity.isExpired ? 'bg-[#FEF2F2] border-[#FECACA] text-[#DC2626]' : 'shadow-xs'
+            }`}
+            style={!validity.isExpired ? {
+              backgroundColor: 'var(--surface-subtle)',
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-primary)'
+            } : undefined}
+          >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
                 {validity.isExpired ? (
@@ -237,7 +268,11 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
 
             <div 
               onClick={() => setImageZoomed(!imageZoomed)}
-              className="relative w-full rounded-2xl overflow-hidden border border-[#E4E9E5] bg-[#F8FAF9] cursor-pointer group"
+              className="relative w-full rounded-2xl overflow-hidden border cursor-pointer group transition-colors"
+              style={{
+                backgroundColor: 'var(--surface-subtle)',
+                borderColor: 'var(--border-color)'
+              }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -255,10 +290,17 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
           {/* Extracted & Verified Prayer Times */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-[#18211C]">
+              <h3 className="text-sm font-semibold uppercase tracking-wide" style={{ color: 'var(--text-primary)' }}>
                 {lang === 'bn' ? 'যাচাইকৃত নামাজের জামাত সময়' : 'Extracted Prayer Times (Jamat)'}
               </h3>
-              <span className="text-[11px] font-semibold text-[#176B4D] bg-[#EEF6F2] px-2 py-0.5 rounded border border-[#C2DFD2]">
+              <span 
+                className="text-[11px] font-semibold px-2 py-0.5 rounded border"
+                style={{
+                  backgroundColor: 'var(--brand-green-surface)',
+                  color: 'var(--brand-green)',
+                  borderColor: 'var(--brand-green-border)'
+                }}
+              >
                 ✓ Admin Verified
               </span>
             </div>
@@ -276,25 +318,35 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                 return (
                   <div
                     key={item.key}
-                    className={`p-3 rounded-2xl border transition-all ${
-                      isCurrentNext
-                        ? 'bg-[#EEF6F2] border-[#C2DFD2] text-[#176B4D]'
-                        : 'bg-white border-[#E4E9E5] text-[#18211C]'
-                    }`}
+                    className="p-3 rounded-2xl border transition-all"
+                    style={isCurrentNext ? {
+                      backgroundColor: 'var(--brand-green-surface)',
+                      borderColor: 'var(--brand-green-border)',
+                      color: 'var(--brand-green)'
+                    } : {
+                      backgroundColor: 'var(--surface-subtle)',
+                      borderColor: 'var(--border-color)',
+                      color: 'var(--text-primary)'
+                    }}
                   >
                     <div className="flex items-center justify-between text-xs mb-1">
                       <span className="font-semibold">
                         {item.icon} {lang === 'bn' ? item.bn : item.en}
                       </span>
                       {isCurrentNext && (
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#176B4D] bg-white px-1.5 py-0.5 rounded border border-[#C2DFD2]">
+                        <span 
+                          className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border"
+                          style={{
+                            backgroundColor: 'var(--surface-card)',
+                            color: 'var(--brand-green)',
+                            borderColor: 'var(--brand-green-border)'
+                          }}
+                        >
                           Next
                         </span>
                       )}
                     </div>
-                    <div className={`text-lg font-bold font-mono tracking-tight ${
-                      isCurrentNext ? 'text-[#176B4D]' : 'text-[#18211C]'
-                    }`}>
+                    <div className="text-lg font-bold font-mono tracking-tight" style={{ color: isCurrentNext ? 'var(--brand-green)' : 'var(--text-primary)' }}>
                       {item.time}
                     </div>
                   </div>
@@ -304,17 +356,24 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
           </div>
 
           {/* Bangladesh Administrative Details */}
-          <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/70 text-xs space-y-1.5 text-slate-600">
-            <h4 className="font-bold text-slate-800 uppercase tracking-wider text-[11px] mb-2">
+          <div 
+            className="rounded-2xl p-4 border text-xs space-y-1.5 transition-colors"
+            style={{
+              backgroundColor: 'var(--surface-subtle)',
+              borderColor: 'var(--border-color)',
+              color: 'var(--text-secondary)'
+            }}
+          >
+            <h4 className="font-bold uppercase tracking-wider text-[11px] mb-2" style={{ color: 'var(--text-primary)' }}>
               {lang === 'bn' ? 'প্রশাসনিক এলাকা বিবরণ' : 'Administrative Location Details'}
             </h4>
             <div className="grid grid-cols-2 gap-2">
-              <div><strong className="text-slate-900">Division:</strong> {mosque.division}</div>
-              <div><strong className="text-slate-900">District:</strong> {mosque.district}</div>
-              <div><strong className="text-slate-900">Upazila/Thana:</strong> {mosque.upazila}</div>
-              <div><strong className="text-slate-900">Union/Ward:</strong> {mosque.union_name || 'N/A'}</div>
+              <div><strong style={{ color: 'var(--text-primary)' }}>Division:</strong> {mosque.division}</div>
+              <div><strong style={{ color: 'var(--text-primary)' }}>District:</strong> {mosque.district}</div>
+              <div><strong style={{ color: 'var(--text-primary)' }}>Upazila/Thana:</strong> {mosque.upazila}</div>
+              <div><strong style={{ color: 'var(--text-primary)' }}>Union/Ward:</strong> {mosque.union_name || 'N/A'}</div>
             </div>
-            <div className="pt-2 text-[11px] text-slate-500">
+            <div className="pt-2 text-[11px]" style={{ color: 'var(--text-muted)' }}>
               Coordinates: {mosque.latitude.toFixed(5)}, {mosque.longitude.toFixed(5)}
             </div>
           </div>
