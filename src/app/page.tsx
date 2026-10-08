@@ -11,7 +11,7 @@ import { BottomNavBar } from '@/components/BottomNavBar';
 import { QiblaCompassModal } from '@/components/QiblaCompassModal';
 import { MosqueData } from '@/types/masjid';
 import { Search, Filter, AlertTriangle, RefreshCw, Compass, MapPin, Navigation, SlidersHorizontal } from 'lucide-react';
-import { filterAndSortMosques } from '@/lib/mosqueFilters';
+import { filterAndSortMosques, VALID_DIVISIONS, DIVISION_STORAGE_KEY, getValidDivision } from '@/lib/mosqueFilters';
 import { useMounted } from '@/lib/useMounted';
 
 const DEFAULT_ADMIN_KEY = 'nm_admin_secret_key_2026_bd';
@@ -36,7 +36,7 @@ export default function NearbyMasjidApp() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters State
+  // Single canonical division and filter state
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDivision, setSelectedDivision] = useState<string>('All');
   const [expiredOnly, setExpiredOnly] = useState<boolean>(false);
@@ -47,6 +47,50 @@ export default function NearbyMasjidApp() {
   const [selectedMosqueForAdmin, setSelectedMosqueForAdmin] = useState<MosqueData | null>(null);
 
   const mosqueListRef = useRef<HTMLDivElement>(null);
+
+  // Restore & validate persisted division filter on client mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlDiv = urlParams.get('division');
+      if (urlDiv) {
+        const validatedUrl = getValidDivision(urlDiv);
+        setSelectedDivision(validatedUrl);
+        localStorage.setItem(DIVISION_STORAGE_KEY, validatedUrl);
+        return;
+      }
+
+      const storedDiv = localStorage.getItem(DIVISION_STORAGE_KEY);
+      if (storedDiv) {
+        const validatedStored = getValidDivision(storedDiv);
+        setSelectedDivision(validatedStored);
+      }
+    } catch (e) {
+      console.warn('Failed to restore persisted division:', e);
+    }
+  }, []);
+
+  // Canonical division change handler
+  const handleDivisionChange = (div: string) => {
+    const validated = getValidDivision(div);
+    setSelectedDivision(validated);
+    setExpiredOnly(false);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(DIVISION_STORAGE_KEY, validated);
+        const url = new URL(window.location.href);
+        if (validated === 'All') {
+          url.searchParams.delete('division');
+        } else {
+          url.searchParams.set('division', validated);
+        }
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch (e) {
+      console.warn('Failed to persist division:', e);
+    }
+  };
 
   // Fetch complete mosque dataset from Database
   const fetchMosques = useCallback(async () => {
@@ -59,6 +103,8 @@ export default function NearbyMasjidApp() {
         params.set('lng', location.lng.toString());
       }
 
+      // We deliberately do not pass division filter in backend query
+      // so allMosques retains full dataset for accurate client-side filtering.
       const res = await fetch(`/api/mosques?${params.toString()}`);
       const data = await res.json();
 
@@ -143,6 +189,16 @@ export default function NearbyMasjidApp() {
     setSelectedDivision('All');
     setExpiredOnly(false);
     setMaxDistanceMeters(null);
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(DIVISION_STORAGE_KEY, 'All');
+        const url = new URL(window.location.href);
+        url.searchParams.delete('division');
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch (e) {
+      console.warn('Failed to reset division:', e);
+    }
   };
 
   return (
@@ -309,10 +365,7 @@ export default function NearbyMasjidApp() {
                   return (
                     <button
                       key={div}
-                      onClick={() => {
-                        setSelectedDivision(div);
-                        setExpiredOnly(false);
-                      }}
+                      onClick={() => handleDivisionChange(div)}
                       className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap border touch-target-44 ${
                         isActive
                           ? 'bg-[#0B3B2C] text-white border-[#0B3B2C] shadow-xs'

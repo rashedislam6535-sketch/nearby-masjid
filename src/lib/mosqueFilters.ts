@@ -1,6 +1,27 @@
 import { MosqueData } from '../types/masjid';
 import { calculateDistance } from './geoUtils';
 
+export const VALID_DIVISIONS = [
+  'All',
+  'Dhaka',
+  'Barisal',
+  'Chittagong',
+  'Sylhet',
+  'Khulna',
+  'Rajshahi',
+  'Rangpur',
+  'Mymensingh'
+];
+
+export const DIVISION_STORAGE_KEY = 'nearby_masjid_selected_division';
+
+export function getValidDivision(value: string | null | undefined): string {
+  if (!value) return 'All';
+  const trimmed = value.trim();
+  const match = VALID_DIVISIONS.find((d) => d.toLowerCase() === trimmed.toLowerCase());
+  return match || 'All';
+}
+
 export interface FilterOptions {
   searchQuery?: string;
   selectedDivision?: string;
@@ -35,7 +56,7 @@ export function filterAndSortMosques(
 
   const filtered = mosques.filter((m) => {
     // 1. Division Filter
-    if (activeDivision && activeDivision !== 'All') {
+    if (activeDivision && activeDivision.toLowerCase() !== 'all') {
       const mDiv = (m.division || '').trim().toLowerCase();
       if (mDiv !== activeDivision.toLowerCase()) {
         return false;
