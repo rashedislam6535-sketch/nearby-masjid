@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450" fill="none">
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06281e" />
+      <stop offset="50%" stop-color="#0b3b2c" />
+      <stop offset="100%" stop-color="#041f17" />
+    </linearGradient>
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" />
+      <stop offset="50%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#b45309" />
+    </linearGradient>
+    <linearGradient id="dome-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#064e3b" stop-opacity="0.8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="450" fill="url(#bg-grad)" />
+
+  <!-- Geometric Islamic Pattern Background Grid -->
+  <g opacity="0.06" stroke="#ffffff" stroke-width="1">
+    <circle cx="400" cy="225" r="160" />
+    <circle cx="400" cy="225" r="240" />
+    <polygon points="400,65 560,225 400,385 240,225" />
+    <polygon points="400,105 520,225 400,345 280,225" />
+  </g>
+
+  <!-- Main Central Dome -->
+  <path d="M 280 270 C 280 140, 360 120, 400 90 C 440 120, 520 140, 520 270 Z" fill="url(#dome-grad)" stroke="#10b981" stroke-width="2" />
+  
+  <!-- Dome Finial / Crescent -->
+  <line x1="400" y1="90" x2="400" y2="55" stroke="url(#gold-grad)" stroke-width="3" stroke-linecap="round" />
+  <circle cx="400" cy="50" r="8" fill="url(#gold-grad)" />
+  <path d="M 400 44 A 6 6 0 1 0 405 54 A 8 8 0 1 1 400 44 Z" fill="#041f17" />
+
+  <!-- Left Minaret -->
+  <rect x="200" y="150" width="30" height="180" rx="3" fill="#073a2b" stroke="#10b981" stroke-width="1.5" />
+  <polygon points="195,150 215,90 235,150" fill="url(#gold-grad)" />
+  <rect x="195" y="170" width="40" height="8" rx="2" fill="url(#gold-grad)" />
+  <rect x="195" y="240" width="40" height="8" rx="2" fill="url(#gold-grad)" />
+
+  <!-- Right Minaret -->
+  <rect x="570" y="150" width="30" height="180" rx="3" fill="#073a2b" stroke="#10b981" stroke-width="1.5" />
+  <polygon points="565,150 585,90 605,150" fill="url(#gold-grad)" />
+  <rect x="565" y="170" width="40" height="8" rx="2" fill="url(#gold-grad)" />
+  <rect x="565" y="240" width="40" height="8" rx="2" fill="url(#gold-grad)" />
+
+  <!-- Mosque Base Building -->
+  <rect x="230" y="270" width="340" height="110" fill="#063225" stroke="#10b981" stroke-width="1.5" />
+
+  <!-- Arches in Base -->
+  <path d="M 360 380 V 315 C 360 295, 440 295, 440 315 V 380 Z" fill="#031a13" stroke="url(#gold-grad)" stroke-width="2" />
+  <path d="M 260 380 V 330 C 260 315, 310 315, 310 330 V 380 Z" fill="#031a13" stroke="#10b981" stroke-width="1" />
+  <path d="M 490 380 V 330 C 490 315, 540 315, 540 330 V 380 Z" fill="#031a13" stroke="#10b981" stroke-width="1" />
+
+  <!-- Stars in Night Sky -->
+  <circle cx="150" cy="80" r="1.5" fill="#fef08a" opacity="0.8" />
+  <circle cx="280" cy="60" r="1.5" fill="#fef08a" opacity="0.9" />
+  <circle cx="510" cy="70" r="1.5" fill="#fef08a" opacity="0.8" />
+  <circle cx="670" cy="110" r="1.5" fill="#fef08a" opacity="0.9" />
+  <circle cx="120" cy="190" r="1.5" fill="#fef08a" opacity="0.6" />
+  <circle cx="690" cy="200" r="1.5" fill="#fef08a" opacity="0.7" />
+
+  <!-- Subtle Brand Watermark -->
+  <text x="400" y="420" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-size="13" font-weight="600" fill="#6ee7b7" letter-spacing="1">
+    NEARBY MASJID BANGLADESH
+  </text>
+</svg>

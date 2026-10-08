@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Compass, Map, PlusCircle, Sun, Moon, Sparkles, ChevronDown } from 'lucide-react';
 import { useTheme, ThemeMode } from '@/context/ThemeContext';
+import { useMounted } from '@/lib/useMounted';
 
 interface HeaderNavProps {
   activeTab: 'list' | 'map' | 'admin';
@@ -14,7 +15,8 @@ interface HeaderNavProps {
 }
 
 export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang, expiredCount = 0 }: HeaderNavProps) {
-  const { theme, setTheme, toggleTheme } = useTheme();
+  const mounted = useMounted();
+  const { theme, setTheme } = useTheme();
   const [showThemeMenu, setShowThemeMenu] = useState(false);
   const themeMenuRef = useRef<HTMLDivElement>(null);
 
@@ -81,7 +83,13 @@ export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang,
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo.png" alt="Nearby Masjid Logo" className="w-full h-full object-cover" />
+            <img 
+              src="/logo-128.png" 
+              alt="Nearby Masjid Logo" 
+              width={36} 
+              height={36} 
+              className="w-full h-full object-cover" 
+            />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
@@ -180,16 +188,18 @@ export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang,
           <div className="relative" ref={themeMenuRef}>
             <button
               onClick={() => setShowThemeMenu(!showThemeMenu)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-colors shadow-2xs touch-target-44"
               style={{
                 backgroundColor: 'var(--surface-card)',
                 borderColor: 'var(--border-color)',
                 color: 'var(--text-primary)'
               }}
               title={`Current Theme: ${currentThemeObj.labelEn}. Click to choose Light, Dim, or Dark.`}
+              aria-label={lang === 'bn' ? `থিম পরিবর্তন করুন (বর্তমান: ${mounted ? currentThemeObj.labelBn : 'লাইট'})` : `Change color theme (Current: ${mounted ? currentThemeObj.labelEn : 'Light'})`}
+              aria-expanded={showThemeMenu}
             >
               <span className="flex items-center justify-center">{currentThemeObj.icon}</span>
-              <span className="hidden sm:inline text-xs">{lang === 'bn' ? currentThemeObj.labelBn : currentThemeObj.labelEn}</span>
+              <span className="hidden sm:inline text-xs">{mounted ? (lang === 'bn' ? currentThemeObj.labelBn : currentThemeObj.labelEn) : 'Light'}</span>
               <ChevronDown className="w-3 h-3 opacity-60" />
             </button>
 
@@ -201,12 +211,14 @@ export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang,
                   backgroundColor: 'var(--surface-card)',
                   borderColor: 'var(--border-color)',
                 }}
+                role="region"
+                aria-label="Theme selection options"
               >
                 <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                   {lang === 'bn' ? 'থিম নির্বাচন করুন' : 'Select Theme'}
                 </div>
                 {themeOptions.map((opt) => {
-                  const isSelected = theme === opt.id;
+                  const isSelected = (mounted ? theme : 'light') === opt.id;
                   return (
                     <button
                       key={opt.id}
@@ -214,12 +226,13 @@ export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang,
                         setTheme(opt.id);
                         setShowThemeMenu(false);
                       }}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-colors ${
+                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-semibold transition-colors touch-target-44 ${
                         isSelected 
                           ? 'bg-[#0B3B2C] text-white' 
                           : 'hover:opacity-80'
                       }`}
                       style={!isSelected ? { color: 'var(--text-primary)' } : undefined}
+                      aria-pressed={isSelected}
                     >
                       <div className="flex items-center gap-2">
                         <span className="w-4 h-4 flex items-center justify-center">{opt.icon}</span>
@@ -241,13 +254,14 @@ export function HeaderNav({ activeTab, setActiveTab, onOpenQibla, lang, setLang,
           {/* Language Switcher */}
           <button
             onClick={() => setLang(lang === 'en' ? 'bn' : 'en')}
-            className="px-2.5 py-1.5 rounded-xl text-xs font-bold border transition-colors shadow-2xs hover:opacity-80"
+            className="px-3 py-2 rounded-xl text-xs font-bold border transition-colors shadow-2xs hover:opacity-80 touch-target-44"
             style={{
               backgroundColor: 'var(--surface-card)',
               borderColor: 'var(--border-color)',
               color: 'var(--text-primary)'
             }}
             title="Toggle Language"
+            aria-label={lang === 'en' ? 'Switch language to Bengali' : 'Switch language to English'}
           >
             {lang === 'en' ? 'বাংলা' : 'EN'}
           </button>

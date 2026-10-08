@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/dbClient';
+import { verifyAdminAuth, sanitizeString, isValidCoordinates } from '@/lib/auth';
+import { getSafeMosqueImage } from '@/lib/imageUtils';
 
 export async function GET(
   request: NextRequest,
@@ -41,7 +43,10 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Mosque not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, mosque: rows[0] });
+    const row = rows[0];
+    row.image = getSafeMosqueImage(row.image as string);
+
+    return NextResponse.json({ success: true, mosque: row });
   } catch (error) {
     console.error('Error in GET /api/mosques/[id]:', error);
     return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
@@ -53,10 +58,21 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 1. Server-side Authorization Check
+    if (!verifyAdminAuth(request)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required to update mosque information' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const mosqueId = parseInt(id, 10);
-    const body = await request.json();
+    if (isNaN(mosqueId)) {
+      return NextResponse.json({ success: false, error: 'Invalid mosque ID' }, { status: 400 });
+    }
 
+    const body = await request.json();
     const {
       mosque_name_bn,
       mosque_name_en,
@@ -70,6 +86,26 @@ export async function PUT(
       longitude,
       contact
     } = body;
+
+    // Validate coordinates if provided
+    if (latitude !== undefined && longitude !== undefined && !isValidCoordinates(latitude, longitude)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid coordinates provided' },
+        { status: 400 }
+      );
+    }
+
+    const cleanBnName = mosque_name_bn !== undefined ? sanitizeString(mosque_name_bn) : null;
+    const cleanEnName = mosque_name_en !== undefined ? sanitizeString(mosque_name_en) : null;
+    const cleanImage = image !== undefined ? getSafeMosqueImage(image) : null;
+    const cleanAddress = address !== undefined ? sanitizeString(address) : null;
+    const cleanDivision = division !== undefined ? sanitizeString(division) : null;
+    const cleanDistrict = district !== undefined ? sanitizeString(district) : null;
+    const cleanUpazila = upazila !== undefined ? sanitizeString(upazila) : null;
+    const cleanUnion = union_name !== undefined ? sanitizeString(union_name) : null;
+    const cleanContact = contact !== undefined ? sanitizeString(contact) : null;
+    const numLat = latitude !== undefined ? parseFloat(latitude) : null;
+    const numLng = longitude !== undefined ? parseFloat(longitude) : null;
 
     const updateSql = `
       UPDATE mosques
@@ -91,17 +127,17 @@ export async function PUT(
     `;
 
     const res = await query(updateSql, [
-      mosque_name_bn,
-      mosque_name_en,
-      image,
-      address,
-      division,
-      district,
-      upazila,
-      union_name,
-      latitude !== undefined ? parseFloat(latitude) : null,
-      longitude !== undefined ? parseFloat(longitude) : null,
-      contact,
+      cleanBnName,
+      cleanEnName,
+      cleanImage,
+      cleanAddress,
+      cleanDivision,
+      cleanDistrict,
+      cleanUpazila,
+      cleanUnion,
+      numLat,
+      numLng,
+      cleanContact,
       mosqueId
     ]);
 
@@ -121,8 +157,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 1. Server-side Authorization Check
+    if (!verifyAdminAuth(request)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required to delete mosques' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const mosqueId = parseInt(id, 10);
+    if (isNaN(mosqueId)) {
+      return NextResponse.json({ success: false, error: 'Invalid mosque ID' }, { status: 400 });
+    }
 
     await query('DELETE FROM mosques WHERE id = $1;', [mosqueId]);
 

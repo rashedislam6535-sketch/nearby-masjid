@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { MapPin, Navigation, Search, Check, Sparkles } from 'lucide-react';
+import { MapPin, Navigation, Search, Check } from 'lucide-react';
+import 'leaflet/dist/leaflet.css';
 
 interface LocationPickerMapProps {
   lat: number;
@@ -12,13 +13,12 @@ interface LocationPickerMapProps {
 
 export function LocationPickerMap({ lat, lng, onChange, lang }: LocationPickerMapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<unknown>(null);
-  const markerRef = useRef<unknown>(null);
+  const mapInstanceRef = useRef<{ remove: () => void; invalidateSize: () => void; setView: (center: [number, number], zoom: number) => void } | null>(null);
+  const markerRef = useRef<{ setLatLng: (coords: [number, number]) => void } | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
   const [locating, setLocating] = useState(false);
-  const currentCoords = { lat, lng };
 
   useEffect(() => {
     let isMounted = true;
@@ -29,16 +29,21 @@ export function LocationPickerMap({ lat, lng, onChange, lang }: LocationPickerMa
       const L = await import('leaflet');
 
       if (mapInstanceRef.current) {
-        (mapInstanceRef.current as { remove: () => void }).remove();
+        mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+      }
+
+      const container = mapContainerRef.current as HTMLDivElement & { _leaflet_id?: number };
+      if (container._leaflet_id) {
+        delete container._leaflet_id;
       }
 
       if (!mapContainerRef.current || !isMounted) return;
 
-      const initialLat = currentCoords.lat || 23.8041;
-      const initialLng = currentCoords.lng || 90.3653;
+      const initialLat = typeof lat === 'number' && !isNaN(lat) ? lat : 23.8041;
+      const initialLng = typeof lng === 'number' && !isNaN(lng) ? lng : 90.3653;
 
-      const map = L.map(mapContainerRef.current, {
+      const map = L.map(container, {
         center: [initialLat, initialLng],
         zoom: 15,
         zoomControl: true,
@@ -83,6 +88,13 @@ export function LocationPickerMap({ lat, lng, onChange, lang }: LocationPickerMa
         onChange(Number(clickLat.toFixed(6)), Number(clickLng.toFixed(6)));
       });
 
+      map.invalidateSize();
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 150);
+
       mapInstanceRef.current = map;
       markerRef.current = marker;
     }
@@ -92,137 +104,112 @@ export function LocationPickerMap({ lat, lng, onChange, lang }: LocationPickerMa
     return () => {
       isMounted = false;
       if (mapInstanceRef.current) {
-        (mapInstanceRef.current as { remove: () => void }).remove();
+        mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update marker position when coords change from search or GPS
-  const updateMapPosition = (newLat: number, newLng: number) => {
-    onChange(Number(newLat.toFixed(6)), Number(newLng.toFixed(6)));
-
-    if (mapInstanceRef.current && markerRef.current) {
-      const map = mapInstanceRef.current as { setView: (coords: [number, number], zoom: number) => void };
-      const marker = markerRef.current as { setLatLng: (coords: [number, number]) => void };
-      map.setView([newLat, newLng], 16);
-      marker.setLatLng([newLat, newLng]);
+  // Update marker position when lat/lng change from outside
+  useEffect(() => {
+    if (markerRef.current && mapInstanceRef.current && typeof lat === 'number' && typeof lng === 'number' && !isNaN(lat) && !isNaN(lng)) {
+      markerRef.current.setLatLng([lat, lng]);
+      mapInstanceRef.current.setView([lat, lng], 15);
+      mapInstanceRef.current.invalidateSize();
     }
+  }, [lat, lng]);
+
+  const handleUseLiveLocation = () => {
+    if (!navigator.geolocation) return;
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const newLat = Number(latitude.toFixed(6));
+        const newLng = Number(longitude.toFixed(6));
+        onChange(newLat, newLng, 'Live GPS Position');
+        if (markerRef.current && mapInstanceRef.current) {
+          markerRef.current.setLatLng([newLat, newLng]);
+          mapInstanceRef.current.setView([newLat, newLng], 16);
+          mapInstanceRef.current.invalidateSize();
+        }
+        setLocating(false);
+      },
+      () => {
+        setLocating(false);
+      },
+      { timeout: 8000 }
+    );
   };
 
-  // Search location using OpenStreetMap Nominatim (Bangladesh)
-  const handleSearchPlace = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleNominatimSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (!searchQuery.trim()) return;
 
     setSearching(true);
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-          searchQuery + ', Bangladesh'
-        )}&countrycodes=bd&limit=1`
-      );
+      const q = encodeURIComponent(`${searchQuery.trim()}, Bangladesh`);
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`, {
+        headers: { 'User-Agent': 'NearbyMasjidLocationPicker/1.0' },
+      });
       const data = await res.json();
       if (data && data.length > 0) {
-        const result = data[0];
-        const newLat = parseFloat(result.lat);
-        const newLng = parseFloat(result.lon);
-        updateMapPosition(newLat, newLng);
-      } else {
-        alert(lang === 'bn' ? 'স্থানটি পাওয়া যায়নি, অনুগ্রহ করে অন্য নাম দিয়ে খুঁজুন।' : 'Location not found. Try searching with city or road name.');
+        const found = data[0];
+        const newLat = parseFloat(found.lat);
+        const newLng = parseFloat(found.lon);
+        onChange(newLat, newLng, found.display_name.split(',')[0]);
+        if (markerRef.current && mapInstanceRef.current) {
+          markerRef.current.setLatLng([newLat, newLng]);
+          mapInstanceRef.current.setView([newLat, newLng], 15);
+          mapInstanceRef.current.invalidateSize();
+        }
       }
-    } catch (err) {
-      console.error('Geocoding error:', err);
+    } catch {
+      // Nominatim search fallback
     } finally {
       setSearching(false);
     }
   };
 
-  // Detect live GPS location
-  const handleUseGps = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser.');
-      return;
-    }
-
-    setLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        updateMapPosition(latitude, longitude);
-        setLocating(false);
-      },
-      (err) => {
-        console.warn('GPS error:', err);
-        setLocating(false);
-        alert('Could not detect GPS location. You can click on the map to place the pin.');
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    );
-  };
-
   return (
-    <div className="space-y-2 bg-slate-50 p-3 rounded-2xl border border-slate-200 shadow-sm">
+    <div className="space-y-3">
       {/* Search and GPS Bar */}
-      <div className="flex flex-col sm:flex-row items-center gap-2">
-        <form onSubmit={handleSearchPlace} className="relative flex-1 w-full">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+      <div className="flex gap-2">
+        <form onSubmit={handleNominatimSearch} className="flex-1 relative">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={
               lang === 'bn'
-                ? 'এলাকা দিয়ে খুঁজুন (যেমন: মিরপুর ১০, গুঠিয়া বরিশাল, ধানমন্ডি)...'
+                ? 'এলাকা বা থানার নাম লিখে খুঁজুন (যেমন: মিরপুর ১০, বরিশাল)...'
                 : 'Search area/road (e.g., Mirpur 10, Guthia Barisal, Dhanmondi)...'
             }
-            className="w-full pl-9 pr-20 py-2 bg-white border border-slate-300 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full h-10 pl-9 pr-3 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none"
           />
-          <button
-            type="submit"
-            disabled={searching}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-emerald-900 hover:bg-emerald-950 text-white rounded-lg text-[11px] font-bold transition-colors disabled:opacity-60"
-          >
-            {searching ? '...' : (lang === 'bn' ? 'খুঁজুন' : 'Search')}
-          </button>
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
         </form>
 
         <button
           type="button"
-          onClick={handleUseGps}
+          onClick={handleUseLiveLocation}
           disabled={locating}
-          className="w-full sm:w-auto px-3 py-2 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm whitespace-nowrap"
+          className="h-10 px-3 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm disabled:opacity-50"
+          title="Use GPS Coordinates"
+          aria-label="Use live GPS coordinates"
         >
           <Navigation className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
-          <span>{locating ? 'Locating...' : (lang === 'bn' ? '📍 বর্তমান লোকেশন নিন' : '📍 Use My GPS')}</span>
+          <span className="hidden sm:inline">{lang === 'bn' ? 'আমার জিপিএস' : 'My GPS'}</span>
         </button>
       </div>
 
-      {/* Interactive Map Box */}
-      <div className="relative w-full h-56 sm:h-64 rounded-xl overflow-hidden border border-slate-300 shadow-inner">
+      {/* Map Canvas */}
+      <div className="relative w-full h-64 rounded-2xl overflow-hidden border border-slate-300 shadow-inner bg-slate-100">
         <div ref={mapContainerRef} className="w-full h-full" />
-        
-        {/* Helper overlay instruction */}
-        <div className="absolute top-2 left-2 z-[1000] bg-emerald-950/90 text-white backdrop-blur-md px-2.5 py-1 rounded-lg text-[11px] font-medium flex items-center gap-1.5 shadow-md pointer-events-none">
-          <MapPin className="w-3.5 h-3.5 text-amber-400" />
-          <span>{lang === 'bn' ? 'ম্যাপে ক্লিক করে পিন বসান বা ড্র্যাগ করুন' : 'Click on map or drag pin to set exact location'}</span>
+        <div className="absolute bottom-2 left-2 z-[1000] bg-white/95 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-mono text-emerald-950 font-bold border border-emerald-200 shadow-sm">
+          📍 {lat?.toFixed(5) || '0.00000'}, {lng?.toFixed(5) || '0.00000'}
         </div>
-      </div>
-
-      {/* Selected Coordinates Display */}
-      <div className="bg-white p-2.5 rounded-xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-2 text-emerald-900">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="font-semibold text-slate-700">
-            {lang === 'bn' ? 'নির্বাচিত স্থানাঙ্ক:' : 'Selected Coordinates:'}
-          </span>
-          <code className="bg-emerald-50 text-emerald-950 px-2 py-0.5 rounded font-mono font-bold text-[11px] border border-emerald-200">
-            {currentCoords.lat.toFixed(5)}, {currentCoords.lng.toFixed(5)}
-          </code>
-        </div>
-        <span className="text-[11px] text-slate-500">
-          ✓ {lang === 'bn' ? 'সরাসরি ফর্মে যুক্ত হয়েছে' : 'Auto-filled into form'}
-        </span>
       </div>
     </div>
   );

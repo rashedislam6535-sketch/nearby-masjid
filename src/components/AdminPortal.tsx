@@ -11,6 +11,7 @@ import { BANGLADESH_DIVISIONS } from '@/lib/geoUtils';
 import { performOcrOnImage } from '@/lib/ocrService';
 import { checkTimetableValidity } from '@/lib/prayerTracker';
 import { LocationPickerMap } from '@/components/LocationPickerMap';
+import { getSafeMosqueImage, DEFAULT_MOSQUE_PLACEHOLDER } from '@/lib/imageUtils';
 
 const DRAFT_MOSQUE_KEY = 'nearby_masjid_add_draft_v1';
 const ADMIN_TAB_KEY = 'nearby_masjid_admin_tab_v1';
@@ -316,7 +317,10 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
     try {
       const res = await fetch(`/api/mosques/${selectedMosqueId}/prayer`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-key': 'nm_admin_secret_key_2026_bd'
+        },
         body: JSON.stringify({
           fajr: timetableForm.fajr,
           dhuhr: timetableForm.dhuhr,
@@ -354,7 +358,10 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
     try {
       const res = await fetch('/api/mosques', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-admin-key': 'nm_admin_secret_key_2026_bd'
+        },
         body: JSON.stringify({
           mosque_name_bn: addForm.mosque_name_bn,
           mosque_name_en: addForm.mosque_name_en,
@@ -415,7 +422,12 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`/api/mosques/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/mosques/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'x-admin-key': 'nm_admin_secret_key_2026_bd'
+        }
+      });
       const data = await res.json();
       if (data.success) {
         setSaveSuccess(lang === 'bn' ? `"${mosqueName}" সফলভাবে ডাটাবেজ থেকে মুছে ফেলা হয়েছে` : `"${mosqueName}" removed successfully from database`);
@@ -1284,9 +1296,14 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
                     <div className="flex items-center gap-3">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={m.image}
+                        src={getSafeMosqueImage(m.image)}
                         alt={m.mosque_name_en}
+                        width={48}
+                        height={48}
                         className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0"
+                        onError={(e) => {
+                          e.currentTarget.src = DEFAULT_MOSQUE_PLACEHOLDER;
+                        }}
                       />
                       <div>
                         <h4 className="font-bold text-xs text-slate-900 leading-tight">

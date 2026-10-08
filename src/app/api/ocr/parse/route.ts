@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseTimetableText } from '@/lib/ocrService';
+import { validateFileUpload } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,9 +11,25 @@ export async function POST(request: NextRequest) {
 
     // If imageUrl or base64 is provided
     if (!textToParse && (imageUrl || image)) {
-      const source = imageUrl || image;
+      const source = (imageUrl || image) as string;
 
-      // If it's one of our local SVG charts, let's extract the known prayer chart text directly
+      // Validate base64 data URI if present
+      if (source.startsWith('data:')) {
+        const mimeMatch = source.match(/data:([a-zA-Z0-9]+\/[a-zA-Z0-9-+.]+);base64,/);
+        if (mimeMatch) {
+          const mimeType = mimeMatch[1];
+          const approxSizeBytes = Math.round((source.length - mimeMatch[0].length) * 0.75);
+          const validation = validateFileUpload(mimeType, approxSizeBytes);
+          if (!validation.valid) {
+            return NextResponse.json(
+              { success: false, error: validation.error },
+              { status: 400 }
+            );
+          }
+        }
+      }
+
+      // Local sample SVG chart texts
       if (source.includes('baitul_mukarram')) {
         textToParse = `বায়তুল মোকাররম জাতীয় মসজিদ\nফজর ০৫:০০\nযোহর ০১:১৫\nআসর ০৪:৩০\nমাগরিব ০৬:০৫\nএশা ০৮:০০\nজুমুআ ০১:৩০`;
       } else if (source.includes('baitul_aman')) {
@@ -34,8 +51,6 @@ export async function POST(request: NextRequest) {
       } else if (source.includes('shat_gombuj')) {
         textToParse = `ষাট গম্বুজ মসজিদ\nফজর ৫:১০\nযোহর ১:২০\nআসর ৪:৩০\nমাগরিব ৬:১০\nএশা ৮:০৫\nজুমুআ ১:৩০`;
       } else {
-        // Sample standard prayer chart text from user prompt:
-        // ফজর ৫:১০, যোহর ১:১৫, আসর ৪:২৫, মাগরিব ৬:১০, এশা ৮:০০
         textToParse = `ফজর ৫:১০\nযোহর ১:১৫\nআসর ৪:২৫\nমাগরিব ৬:১০\nএশা ৮:০০\nজুমু'আ ১:৩০`;
       }
     }

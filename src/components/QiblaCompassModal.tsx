@@ -48,6 +48,8 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
 
   const dialRef = useRef<HTMLDivElement>(null);
   const hasVibratedRef = useRef<boolean>(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
 
   const qibla = calculateQiblaBearing(userLocation.lat, userLocation.lng);
   const distanceToKaaba = calculateDistance(userLocation.lat, userLocation.lng, 21.4225, 39.8262);
@@ -59,6 +61,53 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
   // Positive: user should turn Right; Negative: user should turn Left
   const rawDiff = ((qibla.degrees - currentHeading + 540) % 360) - 180;
   const isAligned = Math.abs(rawDiff) <= 3;
+
+  // Accessible keyboard trap and Escape listener
+  useEffect(() => {
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const modal = modalRef.current;
+    if (modal) {
+      const focusable = modal.querySelectorAll<HTMLElement>(focusableSelector);
+      if (focusable.length > 0) {
+        focusable[0].focus();
+      }
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key === 'Tab' && modal) {
+        const focusable = modal.querySelectorAll<HTMLElement>(focusableSelector);
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
+        previousActiveElement.current.focus();
+      }
+    };
+  }, [onClose]);
 
   // Detect mobile vs desktop on mount
   useEffect(() => {
@@ -225,8 +274,14 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
   const dialRotation = -currentHeading;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="qibla-modal-title"
+    >
       <div 
+        ref={modalRef}
         className="w-full max-w-md max-h-[96vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col relative transition-all duration-300"
         style={{
           backgroundColor: 'var(--surface-card)',
@@ -268,9 +323,9 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <h3 className="font-bold font-serif text-base sm:text-lg leading-tight flex items-center gap-1.5">
+                <h2 id="qibla-modal-title" className="font-bold font-serif text-base sm:text-lg leading-tight flex items-center gap-1.5">
                   <span>{lang === 'bn' ? 'স্মার্ট কিবলা কম্পাস' : 'Smart Qibla Compass'}</span>
-                </h3>
+                </h2>
                 {isAligned && (
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400 text-emerald-950 flex items-center gap-1 shadow-2xs animate-bounce">
                     <Sparkles className="w-3 h-3" />
@@ -288,14 +343,14 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
             {/* Audio Toggle */}
             <button
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors border text-xs"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors border text-xs touch-target-44"
               style={{
                 backgroundColor: 'var(--surface-subtle)',
                 borderColor: 'var(--border-color)',
                 color: soundEnabled ? 'var(--text-primary)' : 'var(--text-muted)'
               }}
               title={soundEnabled ? 'Mute Chime' : 'Unmute Chime'}
-              aria-label="Toggle Sound"
+              aria-label={soundEnabled ? (lang === 'bn' ? 'শব্দ বন্ধ করুন' : 'Mute prayer chime') : (lang === 'bn' ? 'শব্দ চালু করুন' : 'Unmute prayer chime')}
             >
               {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
@@ -303,13 +358,13 @@ export function QiblaCompassModal({ userLocation, onClose, lang }: QiblaCompassM
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center transition-colors border hover:opacity-80"
+              className="w-10 h-10 rounded-full flex items-center justify-center transition-colors border hover:opacity-80 touch-target-44"
               style={{
                 backgroundColor: 'var(--surface-subtle)',
                 borderColor: 'var(--border-color)',
                 color: 'var(--text-primary)'
               }}
-              aria-label="Close"
+              aria-label={lang === 'bn' ? 'কিবলা কম্পাস বন্ধ করুন' : 'Close Qibla compass'}
             >
               <X className="w-4 h-4" />
             </button>

@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/dbClient';
+import { verifyAdminAuth, sanitizeString } from '@/lib/auth';
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 1. Server-side Authorization Check
+    if (!verifyAdminAuth(request)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required to update prayer timetable' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const mosqueId = parseInt(id, 10);
 
@@ -30,6 +39,16 @@ export async function PUT(
     const days = parseInt(validity_days || '15', 10);
     const now = new Date();
     const nextUpdate = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+
+    // Sanitize string inputs
+    const cleanFajr = fajr !== undefined ? sanitizeString(fajr) : null;
+    const cleanDhuhr = dhuhr !== undefined ? sanitizeString(dhuhr) : null;
+    const cleanAsr = asr !== undefined ? sanitizeString(asr) : null;
+    const cleanMaghrib = maghrib !== undefined ? sanitizeString(maghrib) : null;
+    const cleanIsha = isha !== undefined ? sanitizeString(isha) : null;
+    const cleanJummah = jummah !== undefined ? sanitizeString(jummah) : null;
+    const cleanImage = image !== undefined ? sanitizeString(image) : null;
+    const cleanOcr = ocr_raw_text !== undefined ? sanitizeString(ocr_raw_text) : null;
 
     // Check if prayer row exists
     const existing = await query<Record<string, unknown>>(
@@ -57,17 +76,17 @@ export async function PUT(
         RETURNING *;
       `;
       const res = await query(updateSql, [
-        fajr,
-        dhuhr,
-        asr,
-        maghrib,
-        isha,
-        jummah,
-        image || null,
+        cleanFajr,
+        cleanDhuhr,
+        cleanAsr,
+        cleanMaghrib,
+        cleanIsha,
+        cleanJummah,
+        cleanImage,
         now,
         nextUpdate,
         is_verified !== undefined ? is_verified : true,
-        ocr_raw_text || null,
+        cleanOcr,
         mosqueId
       ]);
       updatedRecord = res[0];
@@ -81,17 +100,17 @@ export async function PUT(
       `;
       const res = await query(insertSql, [
         mosqueId,
-        fajr || '05:10 AM',
-        dhuhr || '01:15 PM',
-        asr || '04:25 PM',
-        maghrib || '06:10 PM',
-        isha || '08:00 PM',
-        jummah || '01:30 PM',
-        image || '/images/charts/baitul_aman_chart.svg',
+        cleanFajr || '05:10 AM',
+        cleanDhuhr || '01:15 PM',
+        cleanAsr || '04:25 PM',
+        cleanMaghrib || '06:10 PM',
+        cleanIsha || '08:00 PM',
+        cleanJummah || '01:30 PM',
+        cleanImage || '/images/charts/baitul_aman_chart.svg',
         now,
         nextUpdate,
         true,
-        ocr_raw_text || null
+        cleanOcr
       ]);
       updatedRecord = res[0];
     }
@@ -102,8 +121,8 @@ export async function PUT(
       [
         mosqueId,
         'UPDATE_TIMETABLE',
-        `Admin verified and updated timetable: Fajr: ${fajr}, Dhuhr: ${dhuhr}, Asr: ${asr}, Maghrib: ${maghrib}, Isha: ${isha}, Jummah: ${jummah}`,
-        image || null
+        `Admin verified and updated timetable: Fajr: ${cleanFajr}, Dhuhr: ${cleanDhuhr}, Asr: ${cleanAsr}, Maghrib: ${cleanMaghrib}, Isha: ${cleanIsha}, Jummah: ${cleanJummah}`,
+        cleanImage
       ]
     );
 

@@ -1,12 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, useSyncExternalStore } from 'react';
-import { MapPin, Navigation, Clock, Bell, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Navigation, Bell, ChevronDown } from 'lucide-react';
 import { calculatePrayerCountdown } from '@/lib/prayerTracker';
 import { BD_LOCATION_PRESETS, BDLocationPreset } from '@/lib/geoUtils';
 import { getHijriDate, getDailyWisdom, playSoftChime } from '@/lib/islamicUtils';
-
-const subscribeMounted = () => () => {};
+import { useMounted } from '@/lib/useMounted';
 
 interface NextPrayerCardProps {
   currentLocation: {
@@ -29,26 +28,33 @@ interface NextPrayerCardProps {
   lang: 'en' | 'bn';
 }
 
+const DEFAULT_PRAYER_SCHEDULE = {
+  fajr: '05:10 AM',
+  dhuhr: '01:15 PM',
+  asr: '04:25 PM',
+  maghrib: '06:10 PM',
+  isha: '08:00 PM',
+  jummah: '01:30 PM'
+};
+
+// Deterministic reference date for SSR to ensure server and initial client render match identically
+const DETERMINISTIC_SSR_DATE = new Date('2026-03-01T10:00:00.000Z');
+
 export function NextPrayerCard({
   currentLocation,
   onLocationChange,
   onRequestGps,
   gpsLoading,
-  activeMosquePrayer = {
-    fajr: '05:10 AM',
-    dhuhr: '01:15 PM',
-    asr: '04:25 PM',
-    maghrib: '06:10 PM',
-    isha: '08:00 PM',
-    jummah: '01:30 PM'
-  },
+  activeMosquePrayer = DEFAULT_PRAYER_SCHEDULE,
   lang
 }: NextPrayerCardProps) {
-  const [currentTime, setCurrentTime] = useState<Date>(() => new Date());
-  const mounted = useSyncExternalStore(subscribeMounted, () => true, () => false);
+  const mounted = useMounted();
+  const [currentTime, setCurrentTime] = useState<Date>(DETERMINISTIC_SSR_DATE);
   const [showAreaPicker, setShowAreaPicker] = useState<boolean>(false);
 
   useEffect(() => {
+    // Only start live clock after mounting on client
+    setCurrentTime(new Date());
     const timer = setInterval(() => {
       setCurrentTime(new Date());
     }, 1000);
@@ -57,21 +63,23 @@ export function NextPrayerCard({
 
   const tracking = calculatePrayerCountdown(activeMosquePrayer, currentTime);
 
+  // Deterministic values for SSR, live values for client after mounting
   const formattedCurrentTime = mounted
     ? currentTime.toLocaleTimeString('en-US', {
+        timeZone: 'Asia/Dhaka',
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
         hour12: true
       })
-    : '04:00:00 PM';
+    : '--:--:-- BST';
 
-  const hijri = getHijriDate(currentTime);
+  const hijri = mounted ? getHijriDate(currentTime) : { formattedBn: 'রমজান ১৪৪৭', formattedEn: 'Ramadan 1447 AH' };
   const wisdom = getDailyWisdom();
 
   return (
     <div className="space-y-4">
-      {/* 1. CURRENT LOCATION CARD (Clean, warm, crisp) */}
+      {/* 1. CURRENT LOCATION CARD */}
       <div className="bg-white border border-[#E2E8E4] rounded-2xl p-4 sm:p-5 shadow-[0_2px_8px_rgba(0,0,0,0.03)] relative">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           {/* Left: Location & Hijri Date */}
@@ -94,8 +102,9 @@ export function NextPrayerCard({
               <button
                 type="button"
                 onClick={() => setShowAreaPicker(!showAreaPicker)}
-                className="font-bold text-base sm:text-lg text-[#18211C] hover:text-[#0B3B2C] transition-colors flex items-center gap-1.5"
-                title="Change area"
+                className="font-bold text-base sm:text-lg text-[#18211C] hover:text-[#0B3B2C] transition-colors flex items-center gap-1.5 text-left"
+                aria-label={lang === 'bn' ? `এলাকা পরিবর্তন করুন (বর্তমান: ${currentLocation.area})` : `Change area (Current: ${currentLocation.area})`}
+                aria-expanded={showAreaPicker}
               >
                 <span>{currentLocation.area}</span>
                 <ChevronDown className={`w-4 h-4 text-[#5F6B64] transition-transform ${showAreaPicker ? 'rotate-180' : ''}`} />
@@ -108,12 +117,13 @@ export function NextPrayerCard({
             <button
               onClick={onRequestGps}
               disabled={gpsLoading}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all touch-target-44 ${
                 currentLocation.isGps
                   ? 'bg-[#F0F7F4] text-[#0B3B2C] border-[#C2DFD2] shadow-xs'
                   : 'bg-white hover:bg-[#F0F7F4] text-[#18211C] border-[#E2E8E4]'
               }`}
               title="Use precise GPS location"
+              aria-label={lang === 'bn' ? 'সরাসরি জিপিএস অবস্থান ব্যবহার করুন' : 'Use live GPS location'}
             >
               <Navigation className={`w-3.5 h-3.5 ${gpsLoading ? 'animate-spin text-[#0B3B2C]' : 'text-[#5F6B64]'}`} />
               <span>
@@ -130,15 +140,16 @@ export function NextPrayerCard({
                 <div className="text-[10px] text-[#5F6B64] font-medium">
                   {lang === 'bn' ? 'লাইভ সময় (BST)' : 'Live BST Time'}
                 </div>
-                <div suppressHydrationWarning className="text-sm font-mono font-bold text-[#18211C]">
+                <div className="text-sm font-mono font-bold text-[#18211C]">
                   {formattedCurrentTime}
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => playSoftChime()}
-                className="p-1.5 rounded-xl text-[#5F6B64] hover:text-[#0B3B2C] hover:bg-[#F0F7F4] transition-colors"
+                className="p-2 rounded-xl text-[#5F6B64] hover:text-[#0B3B2C] hover:bg-[#F0F7F4] transition-colors touch-target-44 flex items-center justify-center"
                 title={lang === 'bn' ? 'নরম অ্যালার্ট সাউন্ড টেস্ট করুন' : 'Test Soft Chime'}
+                aria-label={lang === 'bn' ? 'নরম নামাজের নোটিফিকেশন সাউন্ড টেস্ট করুন' : 'Test prayer notification sound'}
               >
                 <Bell className="w-4 h-4" />
               </button>
@@ -148,7 +159,11 @@ export function NextPrayerCard({
 
         {/* Area Quick Switcher Dropdown */}
         {showAreaPicker && (
-          <div className="mt-3.5 pt-3 border-t border-[#E2E8E4] grid grid-cols-2 sm:grid-cols-4 gap-2 animate-in fade-in duration-150">
+          <div 
+            className="mt-3.5 pt-3 border-t border-[#E2E8E4] grid grid-cols-2 sm:grid-cols-4 gap-2 animate-in fade-in duration-150"
+            role="region"
+            aria-label="Select Bangladesh Area Preset"
+          >
             {BD_LOCATION_PRESETS.map((preset: BDLocationPreset) => (
               <button
                 key={preset.name}
@@ -161,11 +176,12 @@ export function NextPrayerCard({
                   });
                   setShowAreaPicker(false);
                 }}
-                className={`text-left px-3 py-2 rounded-xl text-xs transition-colors border ${
+                className={`text-left px-3 py-2.5 rounded-xl text-xs transition-colors border touch-target-44 ${
                   currentLocation.area.includes(preset.area)
                     ? 'bg-[#0B3B2C] text-white border-[#0B3B2C] font-semibold shadow-xs'
                     : 'bg-white hover:bg-[#F0F7F4] text-[#5F6B64] border-[#E2E8E4]'
                 }`}
+                aria-pressed={currentLocation.area.includes(preset.area)}
               >
                 <div className="truncate font-medium">{lang === 'bn' ? preset.nameBn : preset.name}</div>
                 <div className={`text-[10px] truncate ${currentLocation.area.includes(preset.area) ? 'text-emerald-200' : 'text-[#88948D]'}`}>
@@ -177,7 +193,7 @@ export function NextPrayerCard({
         )}
       </div>
 
-      {/* 2. NEXT PRAYER HERO CARD (Rich Forest Emerald with Warm Gold Accents) */}
+      {/* 2. NEXT PRAYER HERO CARD */}
       <div className="bg-gradient-to-br from-[#0B3B2C] via-[#0D4433] to-[#07261C] border border-[#176B4D]/50 text-white rounded-2xl p-5 sm:p-6 shadow-md relative overflow-hidden space-y-5">
         
         {/* Subtle Ambient Decorative Light */}
@@ -192,12 +208,12 @@ export function NextPrayerCard({
               <span className="text-xs font-bold text-[#F3BA47] tracking-wider uppercase flex items-center gap-1.5">
                 <span>🕌</span>
                 <span>
-                  {tracking.isRunningNow
+                  {mounted && tracking.isRunningNow
                     ? (lang === 'bn' ? 'চলমান ওয়াক্ত' : 'CURRENT PRAYER')
                     : (lang === 'bn' ? 'পরবর্তী ওয়াক্ত' : 'NEXT PRAYER')}
                 </span>
               </span>
-              {tracking.isRunningNow && (
+              {mounted && tracking.isRunningNow && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#F3BA47] text-[#07261C]">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#07261C] animate-pulse" />
                   <span>{lang === 'bn' ? 'জামাত চলছে' : 'JAMAT IN PROGRESS'}</span>
@@ -207,11 +223,13 @@ export function NextPrayerCard({
 
             <div className="flex items-baseline gap-3">
               <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-serif">
-                {lang === 'bn' ? tracking.nextPrayer.nameBn : tracking.nextPrayer.nameEn}
+                {mounted ? (lang === 'bn' ? tracking.nextPrayer.nameBn : tracking.nextPrayer.nameEn) : (lang === 'bn' ? 'যোহর' : 'Dhuhr')}
               </h2>
               <span className="text-sm text-emerald-100/90 font-medium">
                 {lang === 'bn' ? 'শুরু: ' : 'Starts at '}
-                <strong className="text-[#F3BA47] font-bold">{tracking.nextPrayerTimeFormatted}</strong>
+                <strong className="text-[#F3BA47] font-bold">
+                  {mounted ? tracking.nextPrayerTimeFormatted : '01:15 PM'}
+                </strong>
               </span>
             </div>
           </div>
@@ -219,19 +237,19 @@ export function NextPrayerCard({
           {/* Right Column: Countdown Box */}
           <div className="sm:text-right bg-white/10 backdrop-blur-xs border border-white/15 rounded-xl p-3 sm:px-4 sm:py-2.5 self-start sm:self-auto">
             <div className="text-[11px] text-emerald-200/90 font-medium">
-              {tracking.isRunningNow
+              {mounted && tracking.isRunningNow
                 ? (lang === 'bn' ? 'পরবর্তী ওয়াক্ত পর্যন্ত' : 'Until next waqt')
                 : (lang === 'bn' ? 'বাকি সময়' : 'Time remaining')}
             </div>
-            <div suppressHydrationWarning className="text-2xl sm:text-3xl font-black text-[#F3BA47] tracking-tight font-mono">
+            <div className="text-2xl sm:text-3xl font-black text-[#F3BA47] tracking-tight font-mono">
               {mounted ? (
                 tracking.diffMinutes > 0
                   ? `${tracking.diffMinutes} ${lang === 'bn' ? 'মিনিট' : 'min remaining'}`
                   : `${tracking.diffSeconds} ${lang === 'bn' ? 'সেকেন্ড' : 'sec remaining'}`
-              ) : 'Loading...'}
+              ) : '-- min'}
             </div>
-            <div suppressHydrationWarning className="text-[10px] text-emerald-200/80 font-mono mt-0.5">
-              {mounted ? tracking.countdownText : ''}
+            <div className="text-[10px] text-emerald-200/80 font-mono mt-0.5">
+              {mounted ? tracking.countdownText : '--:--:--'}
             </div>
           </div>
         </div>
@@ -245,7 +263,7 @@ export function NextPrayerCard({
             { key: 'maghrib', bn: 'মাগরিব', en: 'Maghrib', time: activeMosquePrayer.maghrib },
             { key: 'isha', bn: 'এশা', en: 'Isha', time: activeMosquePrayer.isha }
           ].map((w) => {
-            const isTarget = tracking.nextPrayer.key === w.key;
+            const isTarget = mounted ? tracking.nextPrayer.key === w.key : w.key === 'dhuhr';
             return (
               <div
                 key={w.key}

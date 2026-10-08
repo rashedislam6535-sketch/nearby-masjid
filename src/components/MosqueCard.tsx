@@ -1,10 +1,12 @@
 'use client';
 
 import React from 'react';
-import { MapPin, Clock, AlertTriangle, CheckCircle, ChevronRight, Compass } from 'lucide-react';
+import { MapPin, AlertTriangle, CheckCircle, ChevronRight, Compass } from 'lucide-react';
 import { MosqueData } from '@/types/masjid';
 import { calculatePrayerCountdown, checkTimetableValidity } from '@/lib/prayerTracker';
 import { calculateQiblaBearing } from '@/lib/geoUtils';
+import { getSafeMosqueImage, getResponsiveImageUrl, DEFAULT_MOSQUE_PLACEHOLDER } from '@/lib/imageUtils';
+import { useMounted } from '@/lib/useMounted';
 
 interface MosqueCardProps {
   mosque: MosqueData;
@@ -14,12 +16,16 @@ interface MosqueCardProps {
   onToggleFavorite?: (id: number) => void;
 }
 
+const DETERMINISTIC_SSR_DATE = new Date('2026-03-01T10:00:00.000Z');
+
 const DEFAULT_FALLBACK_DATES = {
   updated_date: '2026-03-01T00:00:00.000Z',
   next_update_date: '2026-03-16T00:00:00.000Z'
 };
 
 export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
+  const mounted = useMounted();
+
   const prayer = mosque.prayer || {
     mosque_id: mosque.id,
     fajr: '05:10 AM',
@@ -32,27 +38,42 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
     ...DEFAULT_FALLBACK_DATES
   };
 
-  const tracking = calculatePrayerCountdown(prayer);
+  // Use deterministic time on SSR, live time on client after mounting
+  const referenceTime = mounted ? new Date() : DETERMINISTIC_SSR_DATE;
+  const tracking = calculatePrayerCountdown(prayer, referenceTime);
   const validity = checkTimetableValidity(prayer.updated_date, prayer.next_update_date);
   const qibla = calculateQiblaBearing(mosque.latitude, mosque.longitude);
 
+  const rawImage = getSafeMosqueImage(mosque.image);
+  const responsiveImage = getResponsiveImageUrl(rawImage, 500, 75);
+  const mosqueTitle = lang === 'bn' ? (mosque.mosque_name_bn || mosque.mosque_name_en) : mosque.mosque_name_en;
+
   return (
-    <div 
+    <article 
       className="rounded-2xl border shadow-[0_2px_8px_rgba(0,0,0,0.03)] transition-all flex flex-col overflow-hidden group hover:shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
       style={{
         backgroundColor: 'var(--surface-card)',
         borderColor: 'var(--border-color)',
         color: 'var(--text-primary)',
       }}
+      aria-label={mosqueTitle}
     >
       {/* Mosque Cover Image Header */}
       <div className="relative h-44 w-full bg-slate-100 overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={mosque.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80'}
-          alt={mosque.mosque_name_en}
+          src={responsiveImage}
+          alt={`Exterior photograph of ${mosque.mosque_name_en}`}
+          width={500}
+          height={220}
           className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500"
           loading="lazy"
+          onError={(e) => {
+            const target = e.currentTarget;
+            if (target.src !== DEFAULT_MOSQUE_PLACEHOLDER) {
+              target.src = DEFAULT_MOSQUE_PLACEHOLDER;
+            }
+          }}
         />
 
         {/* Minimal Gradient Overlay */}
@@ -84,7 +105,7 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
         {/* Mosque Title & Address Overlay */}
         <div className="absolute bottom-3 left-3 right-3 text-white">
           <h3 className="text-base font-bold font-serif leading-snug drop-shadow-sm truncate">
-            {lang === 'bn' ? mosque.mosque_name_bn : mosque.mosque_name_en}
+            {mosqueTitle}
           </h3>
           <p className="text-xs text-slate-200 truncate mt-0.5 flex items-center gap-1 drop-shadow-xs">
             <span className="truncate">{mosque.address}</span>
@@ -107,16 +128,16 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
               {lang === 'bn' ? 'পরবর্তী ওয়াক্ত' : 'Next Prayer'}
             </span>
             <div className="text-sm font-bold leading-tight font-serif" style={{ color: 'var(--text-primary)' }}>
-              {lang === 'bn' ? tracking.nextPrayer.nameBn : tracking.nextPrayer.nameEn}
+              {mounted ? (lang === 'bn' ? tracking.nextPrayer.nameBn : tracking.nextPrayer.nameEn) : (lang === 'bn' ? 'যোহর' : 'Dhuhr')}
             </div>
           </div>
 
           <div className="text-right">
             <div className="text-sm font-extrabold font-mono" style={{ color: 'var(--brand-green)' }}>
-              {tracking.nextPrayerTimeFormatted}
+              {mounted ? tracking.nextPrayerTimeFormatted : '01:15 PM'}
             </div>
             <div className="text-[10px] font-medium" style={{ color: 'var(--text-secondary)' }}>
-              {tracking.countdownText}
+              {mounted ? tracking.countdownText : '--:--:--'}
             </div>
           </div>
         </div>
@@ -151,13 +172,14 @@ export function MosqueCard({ mosque, onViewDetails, lang }: MosqueCardProps) {
           <button
             type="button"
             onClick={() => onViewDetails(mosque)}
-            className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-[#0B3B2C] hover:bg-[#07261C] transition-colors flex items-center gap-1 shadow-2xs"
+            className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[#0B3B2C] hover:bg-[#07261C] transition-colors flex items-center gap-1 shadow-2xs touch-target-44"
+            aria-label={`${lang === 'bn' ? 'বিস্তারিত দেখুন' : 'View Details for'} ${mosque.mosque_name_en}`}
           >
             <span>{lang === 'bn' ? 'বিস্তারিত' : 'View Details'}</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

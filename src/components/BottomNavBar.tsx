@@ -24,11 +24,11 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
         color: 'var(--text-primary)'
       }}
     >
-      <div className="flex items-center justify-around max-w-md mx-auto">
+      <div className="flex items-center justify-around max-w-md mx-auto" role="tablist" aria-label="Mobile Navigation">
         {/* Tab 1: Nearby Mosques */}
         <button
           onClick={() => setActiveTab('list')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-colors ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-colors touch-target-44 ${
             activeTab === 'list'
               ? 'font-bold'
               : 'hover:opacity-80'
@@ -36,6 +36,9 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
           style={{
             color: activeTab === 'list' ? 'var(--brand-green)' : 'var(--text-secondary)'
           }}
+          aria-label={lang === 'bn' ? 'নিকটবর্তী মসজিদ তালিকা' : 'Nearby Mosques List'}
+          aria-selected={activeTab === 'list'}
+          role="tab"
         >
           <div 
             className="p-1 rounded-lg transition-colors"
@@ -51,7 +54,7 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
         {/* Tab 2: Interactive Map */}
         <button
           onClick={() => setActiveTab('map')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-colors ${
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-colors touch-target-44 ${
             activeTab === 'map'
               ? 'font-bold'
               : 'hover:opacity-80'
@@ -59,6 +62,9 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
           style={{
             color: activeTab === 'map' ? 'var(--brand-green)' : 'var(--text-secondary)'
           }}
+          aria-label={lang === 'bn' ? 'ইন্টারেক্টিভ মসজিদ মানচিত্র' : 'Interactive Mosque Map'}
+          aria-selected={activeTab === 'map'}
+          role="tab"
         >
           <div 
             className="p-1 rounded-lg transition-colors"
@@ -74,8 +80,9 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
         {/* Tab 3: Qibla Compass Action */}
         <button
           onClick={onOpenQibla}
-          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-transform active:scale-95"
+          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-transform active:scale-95 touch-target-44"
           style={{ color: 'var(--brand-gold-text)' }}
+          aria-label={lang === 'bn' ? 'কিবলা কম্পাস খুলুন' : 'Open Qibla Compass'}
         >
           <div 
             className="p-1 rounded-lg border shadow-2xs"
@@ -94,7 +101,7 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
         {/* Tab 4: Open Contribute Portal (Add & Update) */}
         <button
           onClick={() => setActiveTab('admin')}
-          className={`relative flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-colors ${
+          className={`relative flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-colors touch-target-44 ${
             activeTab === 'admin'
               ? 'font-bold'
               : 'hover:opacity-80'
@@ -102,6 +109,9 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
           style={{
             color: activeTab === 'admin' ? 'var(--brand-green)' : 'var(--text-secondary)'
           }}
+          aria-label={lang === 'bn' ? 'মসজিদ যোগ বা হালনাগাদ পোর্টাল' : 'Add or Update Mosque Portal'}
+          aria-selected={activeTab === 'admin'}
+          role="tab"
         >
           <div 
             className="p-1 rounded-lg transition-colors"
@@ -120,9 +130,10 @@ export function BottomNavBar({ activeTab, setActiveTab, onOpenQibla, lang, expir
         {/* Tab 5: Theme Quick Toggle (Light / Dim / Dark) */}
         <button
           onClick={toggleTheme}
-          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-colors hover:opacity-80"
+          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-colors hover:opacity-80 touch-target-44"
           style={{ color: 'var(--text-secondary)' }}
           title="Toggle Light / Dim / Dark mode"
+          aria-label={lang === 'bn' ? 'থিম পরিবর্তন করুন' : 'Toggle Theme'}
         >
           <div className="p-1 rounded-lg">
             {theme === 'light' && <Sun className="w-5 h-5 text-amber-500" />}

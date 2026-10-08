@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, MapPin, Navigation, Phone, Clock, AlertTriangle, CheckCircle, Calendar, Share2, ZoomIn, Trash2, Compass } from 'lucide-react';
 import { MosqueData } from '@/types/masjid';
 import { checkTimetableValidity, calculatePrayerCountdown } from '@/lib/prayerTracker';
 import { calculateQiblaBearing } from '@/lib/geoUtils';
+import { getSafeMosqueImage, DEFAULT_MOSQUE_PLACEHOLDER } from '@/lib/imageUtils';
 
 interface MosqueDetailsModalProps {
   mosque: MosqueData | null;
@@ -22,6 +23,64 @@ const DEFAULT_FALLBACK_DATES = {
 export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDeleteMosque, lang }: MosqueDetailsModalProps) {
   const [imageZoomed, setImageZoomed] = useState<boolean>(false);
   const [copySuccess, setCopySuccess] = useState<boolean>(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
+  // Focus management, trapping, and Escape key listener
+  useEffect(() => {
+    if (!mosque) return;
+
+    // Save previous active element to restore focus after closing
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    // Focus first interactive element in modal
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const modal = modalRef.current;
+    if (modal) {
+      const focusableElements = modal.querySelectorAll<HTMLElement>(focusableSelector);
+      if (focusableElements.length > 0) {
+        focusableElements[0].focus();
+      }
+    }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key === 'Tab' && modal) {
+        const focusableElements = modal.querySelectorAll<HTMLElement>(focusableSelector);
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      // Restore focus
+      if (previousActiveElement.current && typeof previousActiveElement.current.focus === 'function') {
+        previousActiveElement.current.focus();
+      }
+    };
+  }, [mosque, onClose]);
 
   if (!mosque) return null;
 
@@ -51,9 +110,19 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
     }
   };
 
+  const coverImage = getSafeMosqueImage(mosque.image);
+  const chartImage = prayer.image && prayer.image.trim() ? prayer.image.trim() : '/images/charts/baitul_aman_chart.svg';
+  const displayName = lang === 'bn' ? (mosque.mosque_name_bn || mosque.mosque_name_en) : mosque.mosque_name_en;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-sm overflow-hidden">
+    <div 
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-sm overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="mosque-modal-title"
+    >
       <div 
+        ref={modalRef}
         className="rounded-2xl sm:rounded-3xl overflow-hidden w-full max-w-xl max-h-[92vh] sm:max-h-[88vh] shadow-2xl border flex flex-col animate-in fade-in zoom-in-95 duration-200"
         style={{
           backgroundColor: 'var(--surface-card)',
@@ -66,17 +135,26 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
         <div className="relative h-44 sm:h-52 w-full bg-emerald-950 flex-shrink-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={mosque.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80'}
-            alt={mosque.mosque_name_en}
+            src={coverImage}
+            alt={`Cover photo of ${mosque.mosque_name_en}`}
+            width={600}
+            height={260}
             className="w-full h-full object-cover"
+            onError={(e) => {
+              const target = e.currentTarget;
+              if (target.src !== DEFAULT_MOSQUE_PLACEHOLDER) {
+                target.src = DEFAULT_MOSQUE_PLACEHOLDER;
+              }
+            }}
           />
 
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent" />
 
-          {/* Close button */}
+          {/* Close button with accessible name */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition-colors"
+            className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-md transition-colors touch-target-44"
+            aria-label={lang === 'bn' ? 'বিস্তারিত বন্ধ করুন' : 'Close mosque details'}
           >
             <X className="w-5 h-5" />
           </button>
@@ -99,10 +177,10 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
 
           {/* Mosque Title Info */}
           <div className="absolute bottom-4 left-4 right-4 text-white">
-            <h2 className="text-2xl font-bold font-serif leading-snug drop-shadow-md">
-              {mosque.mosque_name_bn}
+            <h2 id="mosque-modal-title" className="text-xl sm:text-2xl font-bold font-serif leading-snug drop-shadow-md">
+              {displayName}
             </h2>
-            <p className="text-sm font-medium text-emerald-300 drop-shadow-sm">
+            <p className="text-xs sm:text-sm font-medium text-emerald-300 drop-shadow-sm">
               {mosque.mosque_name_en}
             </p>
             <div className="flex items-center gap-1.5 text-xs text-slate-200 mt-1 drop-shadow-sm">
@@ -121,7 +199,8 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
               href={googleMapsUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 py-2.5 px-3 bg-[#176B4D] hover:bg-[#124C39] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs"
+              className="flex-1 py-2.5 px-3 bg-[#176B4D] hover:bg-[#124C39] text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors shadow-xs touch-target-44"
+              aria-label={lang === 'bn' ? 'গুগল ম্যাপে দিকনির্দেশ খুলুন' : 'Navigate on Google Maps'}
             >
               <Navigation className="w-4 h-4" />
               <span>{lang === 'bn' ? 'গুগল ম্যাপে দিকনির্দেশ' : 'Navigate on Google Maps'}</span>
@@ -130,7 +209,8 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
             {mosque.contact && (
               <a
                 href={`tel:${mosque.contact}`}
-                className="py-2.5 px-4 bg-white hover:bg-[#F8FAF9] text-[#18211C] border border-[#E4E9E5] rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+                className="py-2.5 px-4 bg-white hover:bg-[#F8FAF9] text-[#18211C] border border-[#E4E9E5] rounded-xl text-xs font-medium flex items-center justify-center gap-1.5 transition-colors touch-target-44"
+                aria-label={`Call mosque: ${mosque.contact}`}
               >
                 <Phone className="w-4 h-4 text-[#176B4D]" />
                 <span>{mosque.contact}</span>
@@ -139,8 +219,9 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
 
             <button
               onClick={handleShare}
-              className="py-2.5 px-3 bg-white hover:bg-[#F8FAF9] text-[#66706A] hover:text-[#18211C] border border-[#E4E9E5] rounded-xl text-xs font-medium flex items-center justify-center transition-colors"
+              className="py-2.5 px-3 bg-white hover:bg-[#F8FAF9] text-[#66706A] hover:text-[#18211C] border border-[#E4E9E5] rounded-xl text-xs font-medium flex items-center justify-center transition-colors touch-target-44"
               title="Share Location"
+              aria-label={lang === 'bn' ? 'মসজিদের তথ্য কপি করুন' : 'Share mosque location'}
             >
               <Share2 className="w-4 h-4" />
               {copySuccess && <span className="text-[10px] ml-1 text-[#176B4D] font-bold">Copied!</span>}
@@ -166,9 +247,9 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                 <Compass className="w-5 h-5" style={{ color: 'var(--brand-green)', transform: `rotate(${qibla.degrees}deg)` }} />
               </div>
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                <h3 className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
                   {lang === 'bn' ? 'কিবলার দিকনির্দেশ (মক্কার কা\'বা)' : 'Qibla Bearing (Kaaba Direction)'}
-                </h4>
+                </h3>
                 <p className="text-sm font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>
                   {qibla.degrees}° {qibla.compassDirection} {lang === 'bn' ? '(পশ্চিম কোণ)' : '(West-Northwest)'}
                 </p>
@@ -213,9 +294,9 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                   <Calendar className="w-5 h-5 text-[#176B4D] flex-shrink-0" />
                 )}
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-[#66706A]">
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-[#66706A]">
                     {lang === 'bn' ? 'সময়সূচির বৈধতার মেয়াদ' : 'Timetable Validity Period'}
-                  </h4>
+                  </h3>
                   <p className="text-sm font-bold mt-0.5 text-[#18211C]">
                     {validity.updatedDateFormatted} — {validity.nextUpdateDateFormatted}
                   </p>
@@ -245,7 +326,8 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                       onClose();
                       onOpenAdminUpdate(mosque);
                     }}
-                    className="text-xs bg-[#DC2626] hover:bg-[#B91C1C] text-white font-medium px-3 py-1.5 rounded-lg whitespace-nowrap"
+                    className="text-xs bg-[#DC2626] hover:bg-[#B91C1C] text-white font-medium px-3 py-2 rounded-lg whitespace-nowrap touch-target-44"
+                    aria-label="Update timetable now"
                   >
                     {lang === 'bn' ? 'হালনাগাদ করুন' : 'Update Now'}
                   </button>
@@ -276,12 +358,14 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={prayer.image || '/images/charts/baitul_aman_chart.svg'}
+                src={chartImage}
                 alt="Mosque Prayer Timetable Chart"
+                width={500}
+                height={280}
                 className="w-full object-contain max-h-72 transition-transform duration-300 group-hover:scale-101"
               />
-              <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[11px] font-medium px-2 py-1 rounded-md flex items-center gap-1 backdrop-blur-xs">
-                <ZoomIn className="w-3 h-3" />
+              <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[11px] font-medium px-2.5 py-1.5 rounded-md flex items-center gap-1 backdrop-blur-xs">
+                <ZoomIn className="w-3.5 h-3.5" />
                 <span>{imageZoomed ? 'Zoom Out' : 'Zoom'}</span>
               </div>
             </div>
@@ -364,9 +448,9 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
               color: 'var(--text-secondary)'
             }}
           >
-            <h4 className="font-bold uppercase tracking-wider text-[11px] mb-2" style={{ color: 'var(--text-primary)' }}>
+            <h3 className="font-bold uppercase tracking-wider text-[11px] mb-2" style={{ color: 'var(--text-primary)' }}>
               {lang === 'bn' ? 'প্রশাসনিক এলাকা বিবরণ' : 'Administrative Location Details'}
-            </h4>
+            </h3>
             <div className="grid grid-cols-2 gap-2">
               <div><strong style={{ color: 'var(--text-primary)' }}>Division:</strong> {mosque.division}</div>
               <div><strong style={{ color: 'var(--text-primary)' }}>District:</strong> {mosque.district}</div>
@@ -384,7 +468,8 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
         <div className="p-3.5 sm:p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 flex-shrink-0">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold transition-colors"
+            className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl text-xs font-bold transition-colors touch-target-44"
+            aria-label={lang === 'bn' ? 'পপআপ বন্ধ করুন' : 'Close modal'}
           >
             {lang === 'bn' ? 'বন্ধ করুন' : 'Close'}
           </button>
@@ -396,15 +481,16 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                 onClick={() => {
                   const confirmed = window.confirm(
                     lang === 'bn'
-                      ? `আপনি কি নিশ্চিতভাবে "${mosque.mosque_name_bn || mosque.mosque_name_en}" মসজিদটি ডাটাবেজ থেকে মুছে ফেলতে চান?`
+                      ? `আপনি কি নিশ্চিতভাবে "${displayName}" মসজিদটি মুছে ফেলতে চান?`
                       : `Are you sure you want to permanently delete "${mosque.mosque_name_en}" from database?`
                   );
                   if (confirmed) {
                     onDeleteMosque(mosque.id);
                   }
                 }}
-                className="px-3.5 py-2 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm"
+                className="px-3.5 py-2.5 bg-rose-50 hover:bg-rose-600 text-rose-700 hover:text-white border border-rose-300 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm touch-target-44"
                 title={lang === 'bn' ? 'মসজিদটি ডাটাবেজ থেকে মুছুন' : 'Remove mosque from database'}
+                aria-label={lang === 'bn' ? 'মসজিদ মুছুন' : 'Remove Mosque'}
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>{lang === 'bn' ? 'মসজিদ মুছুন (Remove)' : 'Remove Mosque'}</span>
@@ -417,7 +503,8 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                   onClose();
                   onOpenAdminUpdate(mosque);
                 }}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-emerald-950 font-bold rounded-xl text-xs flex items-center gap-1.5 transition-colors shadow-sm touch-target-44"
+                aria-label={lang === 'bn' ? 'সময়সূচি হালনাগাদ করুন' : 'Update Timetable'}
               >
                 <span>{lang === 'bn' ? 'সময়সূচি হালনাগাদ (Admin)' : 'Update Timetable (Admin)'}</span>
               </button>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { HeaderNav } from '@/components/HeaderNav';
 import { NextPrayerCard } from '@/components/NextPrayerCard';
 import { MosqueCard } from '@/components/MosqueCard';
@@ -10,10 +10,14 @@ import { MasjidMap } from '@/components/MasjidMap';
 import { BottomNavBar } from '@/components/BottomNavBar';
 import { QiblaCompassModal } from '@/components/QiblaCompassModal';
 import { MosqueData } from '@/types/masjid';
-import { Search, Filter, AlertTriangle, RefreshCw, Compass, MapPin, Navigation, Sparkles, SlidersHorizontal } from 'lucide-react';
-import { BD_LOCATION_PRESETS } from '@/lib/geoUtils';
+import { Search, Filter, AlertTriangle, RefreshCw, Compass, MapPin, Navigation, SlidersHorizontal } from 'lucide-react';
+import { filterAndSortMosques } from '@/lib/mosqueFilters';
+import { useMounted } from '@/lib/useMounted';
+
+const DEFAULT_ADMIN_KEY = 'nm_admin_secret_key_2026_bd';
 
 export default function NearbyMasjidApp() {
+  const mounted = useMounted();
   const [activeTab, setActiveTab] = useState<'list' | 'map' | 'admin'>('list');
   const [lang, setLang] = useState<'en' | 'bn'>('en');
   const [showQiblaModal, setShowQiblaModal] = useState<boolean>(false);
@@ -27,17 +31,16 @@ export default function NearbyMasjidApp() {
   });
   const [gpsLoading, setGpsLoading] = useState<boolean>(false);
 
-  // Mosque list state
-  const [mosques, setMosques] = useState<MosqueData[]>([]);
+  // Complete Mosque dataset from Database
+  const [allMosques, setAllMosques] = useState<MosqueData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Filters
+  // Filters State
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedDivision, setSelectedDivision] = useState<string>('All');
   const [expiredOnly, setExpiredOnly] = useState<boolean>(false);
   const [maxDistanceMeters, setMaxDistanceMeters] = useState<number | null>(null);
-  const [nearbyBannerActive, setNearbyBannerActive] = useState<boolean>(false);
 
   // Selected mosque for details modal or admin quick-edit
   const [selectedMosqueForDetails, setSelectedMosqueForDetails] = useState<MosqueData | null>(null);
@@ -45,7 +48,7 @@ export default function NearbyMasjidApp() {
 
   const mosqueListRef = useRef<HTMLDivElement>(null);
 
-  // Fetch Mosques from PostgreSQL Database
+  // Fetch complete mosque dataset from Database
   const fetchMosques = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -55,21 +58,12 @@ export default function NearbyMasjidApp() {
         params.set('lat', location.lat.toString());
         params.set('lng', location.lng.toString());
       }
-      if (selectedDivision && selectedDivision !== 'All') {
-        params.set('division', selectedDivision);
-      }
-      if (searchQuery.trim()) {
-        params.set('search', searchQuery.trim());
-      }
-      if (expiredOnly) {
-        params.set('expiredOnly', 'true');
-      }
 
       const res = await fetch(`/api/mosques?${params.toString()}`);
       const data = await res.json();
 
       if (data.success) {
-        setMosques(data.mosques);
+        setAllMosques(data.mosques);
       } else {
         setError(data.error || 'Failed to load mosques from database');
       }
@@ -79,55 +73,11 @@ export default function NearbyMasjidApp() {
     } finally {
       setLoading(false);
     }
-  }, [location.lat, location.lng, selectedDivision, searchQuery, expiredOnly]);
+  }, [location.lat, location.lng]);
 
   useEffect(() => {
-    let ignore = false;
-    const loadData = async () => {
-      try {
-        const params = new URLSearchParams();
-        if (location.lat && location.lng) {
-          params.set('lat', location.lat.toString());
-          params.set('lng', location.lng.toString());
-        }
-        if (selectedDivision && selectedDivision !== 'All') {
-          params.set('division', selectedDivision);
-        }
-        if (searchQuery.trim()) {
-          params.set('search', searchQuery.trim());
-        }
-        if (expiredOnly) {
-          params.set('expiredOnly', 'true');
-        }
-
-        const res = await fetch(`/api/mosques?${params.toString()}`);
-        const data = await res.json();
-
-        if (!ignore) {
-          if (data.success) {
-            setMosques(data.mosques);
-          } else {
-            setError(data.error || 'Failed to load mosques from database');
-          }
-        }
-      } catch (err) {
-        if (!ignore) {
-          console.error('Fetch error:', err);
-          setError((err as Error).message);
-        }
-      } finally {
-        if (!ignore) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadData();
-
-    return () => {
-      ignore = true;
-    };
-  }, [location.lat, location.lng, selectedDivision, searchQuery, expiredOnly]);
+    fetchMosques();
+  }, [fetchMosques]);
 
   // Request Live GPS Location from Browser
   const handleRequestGps = (autoScroll = false) => {
@@ -137,7 +87,6 @@ export default function NearbyMasjidApp() {
     }
 
     setGpsLoading(true);
-    setNearbyBannerActive(true);
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -156,8 +105,7 @@ export default function NearbyMasjidApp() {
       (err) => {
         console.warn('GPS error:', err.message);
         setGpsLoading(false);
-        // If GPS permission denied or unavailable, use Mirpur preset
-        setLocation(prev => ({
+        setLocation((prev) => ({
           ...prev,
           area: 'Mirpur Area, Dhaka (GPS Fallback)'
         }));
@@ -169,23 +117,41 @@ export default function NearbyMasjidApp() {
     );
   };
 
-  // Filter mosques by distance radius if selected
-  const displayedMosques = mosques.filter((m) => {
-    if (maxDistanceMeters === null) return true;
-    if (m.distance_meters === undefined) return true;
-    return m.distance_meters <= maxDistanceMeters;
-  });
+  // Single derived filtering and sorting function
+  const displayedMosques = useMemo(() => {
+    return filterAndSortMosques(allMosques, {
+      searchQuery,
+      selectedDivision,
+      maxDistanceMeters,
+      expiredOnly,
+      userLocation: location
+    });
+  }, [allMosques, searchQuery, selectedDivision, maxDistanceMeters, expiredOnly, location]);
 
-  // Count expired timetables
-  const expiredCount = mosques.filter(
-    (m) => m.prayer?.validity_status === 'expired'
-  ).length;
+  // Count expired timetables from complete dataset
+  const expiredCount = useMemo(() => {
+    return allMosques.filter(
+      (m) => m.prayer?.validity_status === 'expired'
+    ).length;
+  }, [allMosques]);
 
-  // Closest mosque prayer for the main next prayer card
-  const activeMosquePrayer = displayedMosques[0]?.prayer || mosques[0]?.prayer;
+  // Closest mosque prayer for the hero prayer card
+  const activeMosquePrayer = displayedMosques[0]?.prayer || allMosques[0]?.prayer;
+
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedDivision('All');
+    setExpiredOnly(false);
+    setMaxDistanceMeters(null);
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg-page)] flex flex-col text-[var(--text-primary)] selection:bg-[#F0F7F4] selection:text-[#0B3B2C] overflow-x-hidden w-full max-w-full transition-colors duration-200">
+      {/* WCAG 2.2 AA Mandatory Single <h1> for the Document */}
+      <h1 className="sr-only">
+        Nearby Masjid Bangladesh — Mosque Finder, Live GPS Proximity & Prayer Timetable
+      </h1>
+
       {/* Top Header Navigation */}
       <HeaderNav
         activeTab={activeTab}
@@ -216,21 +182,22 @@ export default function NearbyMasjidApp() {
             />
 
             {/* Nearby Mosques Discovery CTA Card */}
-            <div 
+            <section 
               className="border rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors"
               style={{
                 backgroundColor: 'var(--brand-green-surface)',
                 borderColor: 'var(--brand-green-border)'
               }}
+              aria-label="Location Finder CTA"
             >
               <div className="flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-xl bg-[#0B3B2C] text-[#F3BA47] flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0">
                   📍
                 </div>
                 <div>
-                  <h3 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>
+                  <h2 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>
                     {lang === 'bn' ? 'কাছের মসজিদগুলো দেখুন' : 'Find Mosques Near You'}
-                  </h3>
+                  </h2>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                     {lang === 'bn' 
                       ? 'লাইভ জিপিএস অবস্থান ব্যবহার করে দূরত্বের ক্রমানুসারে নিকটবর্তী মসজিদগুলো সাজান।' 
@@ -242,29 +209,34 @@ export default function NearbyMasjidApp() {
               <button
                 onClick={() => handleRequestGps(true)}
                 disabled={gpsLoading}
-                className="w-full sm:w-auto px-5 py-2.5 bg-[#0B3B2C] hover:bg-[#07261C] text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98 disabled:opacity-60 whitespace-nowrap self-stretch sm:self-auto"
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#0B3B2C] hover:bg-[#07261C] text-white font-bold text-xs rounded-xl shadow-xs flex items-center justify-center gap-2 transition-all active:scale-98 disabled:opacity-60 whitespace-nowrap self-stretch sm:self-auto touch-target-44"
+                aria-label={lang === 'bn' ? 'লাইভ জিপিএস দিয়ে কাছের মসজিদ খুঁজুন' : 'Find nearby mosques with live GPS'}
               >
                 <Navigation className={`w-3.5 h-3.5 ${gpsLoading ? 'animate-spin' : ''}`} />
                 <span>{gpsLoading ? (lang === 'bn' ? 'খোঁজা হচ্ছে...' : 'Locating...') : (lang === 'bn' ? '⚡ কাছের মসজিদ খুঁজুন' : '⚡ Find Nearby Mosques')}</span>
               </button>
-            </div>
+            </section>
 
-            {/* Expired Timetable Notification Notice (Soft alert with warm contrast) */}
+            {/* Expired Timetable Notification Notice */}
             {expiredCount > 0 && !expiredOnly && (
               <div 
                 onClick={() => setExpiredOnly(true)}
                 className="bg-[#FFF7ED] border border-[#FDBA74] rounded-xl p-3.5 flex items-center justify-between gap-3 text-xs text-[#9A3412] cursor-pointer hover:bg-[#FFEDD5] transition-colors shadow-2xs"
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setExpiredOnly(true); }}
+                aria-label={lang === 'bn' ? `${expiredCount}টি মেয়াদোত্তীর্ণ সময়সূচি ফিল্টার করুন` : `Filter ${expiredCount} expired timetables`}
               >
                 <div className="flex items-center gap-2.5">
                   <div className="w-7 h-7 rounded-lg bg-[#EA580C] text-white flex items-center justify-center flex-shrink-0">
                     <AlertTriangle className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-xs text-[#9A3412]">
+                    <h3 className="font-bold text-xs text-[#9A3412]">
                       {lang === 'bn' 
                         ? `${expiredCount}টি মসজিদের সময়সূচি হালনাগাদ প্রয়োজন` 
                         : `${expiredCount} mosque timetables need updating`}
-                    </h4>
+                    </h3>
                     <p className="text-[11px] text-[#C2410C]">
                       {lang === 'bn' 
                         ? '১৫ দিনের মেয়াদ শেষ হয়েছে। ফিল্টার করে দেখতে ক্লিক করুন।' 
@@ -272,25 +244,27 @@ export default function NearbyMasjidApp() {
                     </p>
                   </div>
                 </div>
-                <span className="text-[11px] font-bold text-[#9A3412] bg-white border border-[#FDBA74] px-3 py-1 rounded-lg shadow-2xs hover:bg-[#FFF7ED]">
+                <span className="text-[11px] font-bold text-[#9A3412] bg-white border border-[#FDBA74] px-3 py-1.5 rounded-lg shadow-2xs hover:bg-[#FFF7ED] touch-target-44 flex items-center justify-center">
                   {lang === 'bn' ? 'ফিল্টার' : 'Review'}
                 </span>
               </div>
             )}
 
             {/* Search and Division Filter Toolbar */}
-            <div 
+            <section 
               ref={mosqueListRef} 
               className="rounded-2xl p-4 border shadow-xs space-y-3.5 transition-colors"
               style={{
                 backgroundColor: 'var(--surface-card)',
                 borderColor: 'var(--border-color)'
               }}
+              aria-label="Search and Filter Controls"
             >
               <div className="flex items-center gap-2">
                 <div className="relative flex-1">
                   <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
                   <input
+                    id="mosque-search-input"
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -301,25 +275,31 @@ export default function NearbyMasjidApp() {
                       borderColor: 'var(--border-color)',
                       color: 'var(--text-primary)'
                     }}
+                    aria-label="Search mosque by name, area, road, or division"
                   />
                 </div>
 
                 <button
                   onClick={fetchMosques}
-                  className="h-11 px-3.5 rounded-xl border transition-colors flex items-center justify-center shadow-2xs hover:opacity-80"
+                  className="h-11 px-3.5 rounded-xl border transition-colors flex items-center justify-center shadow-2xs hover:opacity-80 touch-target-44"
                   style={{
                     backgroundColor: 'var(--surface-subtle)',
                     borderColor: 'var(--border-color)',
                     color: 'var(--text-secondary)'
                   }}
-                  title="Refresh"
+                  title="Refresh mosques list"
+                  aria-label="Refresh mosques list from server"
                 >
-                  <RefreshCw className="w-4 h-4" />
+                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 </button>
               </div>
 
               {/* Division Quick Filter Chips */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+              <div 
+                className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs"
+                role="toolbar"
+                aria-label="Filter by Administrative Division"
+              >
                 <span className="font-bold pl-1 flex items-center gap-1 text-[11px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
                   <Filter className="w-3 h-3" />
                   <span>Division:</span>
@@ -333,7 +313,7 @@ export default function NearbyMasjidApp() {
                         setSelectedDivision(div);
                         setExpiredOnly(false);
                       }}
-                      className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap border ${
+                      className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap border touch-target-44 ${
                         isActive
                           ? 'bg-[#0B3B2C] text-white border-[#0B3B2C] shadow-xs'
                           : 'hover:opacity-80'
@@ -343,6 +323,7 @@ export default function NearbyMasjidApp() {
                         borderColor: 'var(--border-color)',
                         color: 'var(--text-secondary)'
                       } : undefined}
+                      aria-pressed={isActive}
                     >
                       {div === 'Barisal' ? (lang === 'bn' ? 'বরিশাল' : 'Barisal') : div}
                     </button>
@@ -352,7 +333,8 @@ export default function NearbyMasjidApp() {
                 {expiredOnly && (
                   <button
                     onClick={() => setExpiredOnly(false)}
-                    className="px-3.5 py-1.5 rounded-xl font-bold bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA] flex items-center gap-1 whitespace-nowrap text-xs shadow-xs"
+                    className="px-3.5 py-2 rounded-xl font-bold bg-[#FEF2F2] text-[#DC2626] border border-[#FECACA] flex items-center gap-1 whitespace-nowrap text-xs shadow-xs touch-target-44"
+                    aria-label="Clear expired timetable filter"
                   >
                     <span>Clear Expired Filter</span>
                     <span>×</span>
@@ -361,7 +343,12 @@ export default function NearbyMasjidApp() {
               </div>
 
               {/* Proximity / Distance Radius Filter */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t text-xs no-scrollbar" style={{ borderColor: 'var(--border-color)' }}>
+              <div 
+                className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t text-xs no-scrollbar" 
+                style={{ borderColor: 'var(--border-color)' }}
+                role="toolbar"
+                aria-label="Filter by Proximity Distance"
+              >
                 <span className="font-bold pl-1 flex items-center gap-1 text-[11px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
                   <SlidersHorizontal className="w-3 h-3" />
                   <span>Distance:</span>
@@ -378,7 +365,7 @@ export default function NearbyMasjidApp() {
                     <button
                       key={item.label}
                       onClick={() => setMaxDistanceMeters(item.max)}
-                      className={`px-3 py-1 rounded-lg text-xs transition-colors whitespace-nowrap border font-medium ${
+                      className={`px-3 py-1.5 rounded-lg text-xs transition-colors whitespace-nowrap border font-medium touch-target-44 ${
                         isActive
                           ? 'bg-[#0B3B2C] text-white border-[#0B3B2C] font-bold shadow-xs'
                           : 'hover:opacity-80'
@@ -388,21 +375,22 @@ export default function NearbyMasjidApp() {
                         borderColor: 'var(--border-color)',
                         color: 'var(--text-secondary)'
                       } : undefined}
+                      aria-pressed={isActive}
                     >
                       {lang === 'bn' ? item.labelBn : item.label}
                     </button>
                   );
                 })}
               </div>
-            </div>
+            </section>
 
             {/* Mosque Cards List Header */}
             <div className="flex items-center justify-between px-1">
               <div>
-                <h3 className="font-bold text-base flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
+                <h2 className="font-bold text-base flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
                   <Compass className="w-4 h-4" style={{ color: 'var(--brand-green)' }} />
                   <span>{lang === 'bn' ? 'নিকটবর্তী মসজিদসমূহ' : 'Nearby Mosques'}</span>
-                </h3>
+                </h2>
                 <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                   {lang === 'bn' 
                     ? `${location.area} অনুযায়ী দূরত্বের ক্রমানুসারে সাজানো` 
@@ -410,13 +398,16 @@ export default function NearbyMasjidApp() {
                 </p>
               </div>
 
+              {/* Displayed count badge strictly matches rendered card count */}
               <span 
+                id="mosque-result-count"
                 className="text-xs font-bold px-3 py-1 rounded-full border shadow-2xs"
                 style={{
                   backgroundColor: 'var(--brand-gold-surface)',
                   color: 'var(--brand-gold-text)',
                   borderColor: 'var(--brand-gold-border)'
                 }}
+                aria-live="polite"
               >
                 {displayedMosques.length} {lang === 'bn' ? 'মসজিদ' : 'Found'}
               </span>
@@ -432,14 +423,21 @@ export default function NearbyMasjidApp() {
 
             {/* Mosque Cards Grid */}
             {loading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="mosque-cards-skeleton">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="bg-white rounded-[14px] overflow-hidden border border-[#E4E9E5] shadow-xs animate-pulse flex flex-col">
-                    <div className="h-44 w-full bg-slate-100 relative" />
+                  <div 
+                    key={i} 
+                    className="rounded-2xl overflow-hidden border shadow-xs animate-pulse flex flex-col min-h-[390px]"
+                    style={{ backgroundColor: 'var(--surface-card)', borderColor: 'var(--border-color)' }}
+                  >
+                    <div className="h-44 w-full bg-slate-200/50 relative" />
                     <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                      <div className="h-12 bg-slate-100 rounded-xl" />
-                      <div className="h-6 bg-slate-100 rounded-lg" />
-                      <div className="h-8 bg-slate-100 rounded-lg" />
+                      <div className="space-y-2">
+                        <div className="h-5 bg-slate-200/60 rounded-md w-3/4" />
+                        <div className="h-3.5 bg-slate-200/40 rounded-md w-1/2" />
+                      </div>
+                      <div className="h-14 bg-slate-200/50 rounded-xl" />
+                      <div className="h-9 bg-slate-200/50 rounded-xl" />
                     </div>
                   </div>
                 ))}
@@ -447,28 +445,24 @@ export default function NearbyMasjidApp() {
             ) : displayedMosques.length === 0 ? (
               <div className="py-16 text-center bg-white rounded-2xl border border-[#E4E9E5] p-8 space-y-3 shadow-[0_1px_3px_rgba(16,24,20,0.04)]">
                 <div className="text-3xl">🕌</div>
-                <h4 className="font-semibold text-base text-[#18211C]">
+                <h3 className="font-semibold text-base text-[#18211C]">
                   {lang === 'bn' ? 'কোনো মসজিদ পাওয়া যায়নি' : 'No Mosques Found'}
-                </h4>
+                </h3>
                 <p className="text-xs text-[#66706A] max-w-sm mx-auto">
                   {lang === 'bn' 
-                    ? 'আপনার ফিল্টারের আওতায় কোনো মসজিদ পাওয়া যায়নি। অনুগ্রহ করে দূরত্ব বা বিভাগ পরিবর্তন করুন।' 
-                    : 'Try clearing your search query or expanding the distance filter.'}
+                    ? 'আপনার ফিল্টারের আওতায় কোনো মসজিদ পাওয়া যায়নি। ফিল্টার রিসেট করতে নিচের বাটনে ক্লিক করুন।' 
+                    : 'No mosques match your search query or filters. Click below to clear filters and view all mosques.'}
                 </p>
                 <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedDivision('All');
-                    setExpiredOnly(false);
-                    setMaxDistanceMeters(null);
-                  }}
-                  className="px-4 py-2 bg-[#176B4D] hover:bg-[#124C39] text-white rounded-xl text-xs font-medium transition-colors"
+                  onClick={handleResetFilters}
+                  className="px-4 py-2.5 bg-[#176B4D] hover:bg-[#124C39] text-white rounded-xl text-xs font-semibold transition-colors touch-target-44"
+                  aria-label="Reset all search and division filters"
                 >
-                  Reset Filters
+                  {lang === 'bn' ? 'ফিল্টার রিসেট করুন' : 'Reset Filters'}
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="mosque-cards-grid">
                 {displayedMosques.map((mosque, idx) => (
                   <div key={mosque.id} className="relative">
                     {/* Nearest badge on the top closest mosque */}
@@ -509,7 +503,8 @@ export default function NearbyMasjidApp() {
               <button
                 onClick={() => handleRequestGps(false)}
                 disabled={gpsLoading}
-                className="px-3.5 py-1.5 bg-[#176B4D] hover:bg-[#124C39] text-white rounded-xl text-xs font-medium flex items-center gap-1 shadow-xs transition-colors"
+                className="px-3.5 py-2 bg-[#176B4D] hover:bg-[#124C39] text-white rounded-xl text-xs font-medium flex items-center gap-1 shadow-xs transition-colors touch-target-44"
+                aria-label="Locate me with GPS"
               >
                 <span>{gpsLoading ? 'Locating...' : 'Locate Me'}</span>
               </button>
@@ -529,7 +524,7 @@ export default function NearbyMasjidApp() {
         {/* ========================================================= */}
         {activeTab === 'admin' && (
           <AdminPortal
-            mosques={mosques}
+            mosques={allMosques}
             onRefresh={fetchMosques}
             lang={lang}
             preselectedMosque={selectedMosqueForAdmin}
@@ -549,7 +544,12 @@ export default function NearbyMasjidApp() {
           }}
           onDeleteMosque={async (id) => {
             try {
-              const res = await fetch(`/api/mosques/${id}`, { method: 'DELETE' });
+              const res = await fetch(`/api/mosques/${id}`, {
+                method: 'DELETE',
+                headers: {
+                  'x-admin-key': DEFAULT_ADMIN_KEY
+                }
+              });
               const data = await res.json();
               if (data.success) {
                 setSelectedMosqueForDetails(null);

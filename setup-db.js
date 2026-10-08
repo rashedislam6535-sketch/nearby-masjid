@@ -27,7 +27,7 @@ function updateEnvFile(password) {
       envContent += `\nDATABASE_URL="${newUrl}"\n`;
     }
   } else {
-    envContent = `DATABASE_URL="${newUrl}"\nOWNER_NAME="Rashed Islam"\nOWNER_DEPARTMENT="Operations & Leadership"\nOWNER_EMAIL="me@workpulse.local"\n`;
+    envContent = `DATABASE_URL="${newUrl}"\nOWNER_NAME="Rashed Islam"\nOWNER_DEPARTMENT="Operations & Leadership"\nOWNER_EMAIL="admin@nearbymasjid.local"\n`;
   }
 
   fs.writeFileSync(envPath, envContent, 'utf8');
@@ -36,7 +36,7 @@ function updateEnvFile(password) {
 
 async function runMigration(password) {
   console.log(`\n======================================================`);
-  console.log(`🚀 WorkPulse Supabase Database Migration Tool`);
+  console.log(`🚀 Nearby Masjid Supabase Database Migration Tool`);
   console.log(`Host: ${POOLER_HOST}:6543 (Transaction Pooler)`);
   console.log(`Tenant: postgres.${PROJECT_REF}`);
   console.log(`======================================================\n`);

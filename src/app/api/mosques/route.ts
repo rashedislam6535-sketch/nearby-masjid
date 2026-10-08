@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/dbClient';
 import { calculateDistance } from '@/lib/geoUtils';
 import { checkTimetableValidity } from '@/lib/prayerTracker';
+import { verifyAdminAuth, sanitizeString, isValidCoordinates } from '@/lib/auth';
+import { getSafeMosqueImage } from '@/lib/imageUtils';
 
 export async function GET(request: NextRequest) {
   try {
@@ -54,8 +56,17 @@ export async function GET(request: NextRequest) {
     }
 
     if (search) {
-      sql += ` AND (m.mosque_name_bn ILIKE $${paramIndex} OR m.mosque_name_en ILIKE $${paramIndex} OR m.address ILIKE $${paramIndex} OR m.upazila ILIKE $${paramIndex})`;
-      params.push(`%${search}%`);
+      const term = `%${search.trim()}%`;
+      sql += ` AND (
+        m.mosque_name_bn ILIKE $${paramIndex} 
+        OR m.mosque_name_en ILIKE $${paramIndex} 
+        OR m.address ILIKE $${paramIndex} 
+        OR m.upazila ILIKE $${paramIndex}
+        OR m.district ILIKE $${paramIndex}
+        OR m.division ILIKE $${paramIndex}
+        OR m.union_name ILIKE $${paramIndex}
+      )`;
+      params.push(term);
       paramIndex++;
     }
 
@@ -88,7 +99,7 @@ export async function GET(request: NextRequest) {
         id: r.id,
         mosque_name_bn: r.mosque_name_bn,
         mosque_name_en: r.mosque_name_en,
-        image: r.image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80',
+        image: getSafeMosqueImage(r.image as string | undefined),
         address: r.address,
         division: r.division,
         district: r.district,
@@ -109,7 +120,7 @@ export async function GET(request: NextRequest) {
           maghrib: r.maghrib || '06:10 PM',
           isha: r.isha || '08:00 PM',
           jummah: r.jummah || '01:30 PM',
-          image: r.prayer_chart_image,
+          image: (r.prayer_chart_image as string) || '/images/charts/baitul_aman_chart.svg',
           updated_date: r.updated_date,
           next_update_date: r.next_update_date,
           is_verified: r.is_verified ?? true,
@@ -144,6 +155,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // 1. Server-side Authorization Check
+    if (!verifyAdminAuth(request)) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required to create mosques' },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const {
       mosque_name_bn,
@@ -160,9 +179,28 @@ export async function POST(request: NextRequest) {
       prayer
     } = body;
 
-    if (!mosque_name_bn || !mosque_name_en || !address || latitude === undefined || longitude === undefined) {
+    // 2. Validate Coordinates
+    if (!isValidCoordinates(latitude, longitude)) {
       return NextResponse.json(
-        { success: false, error: 'Missing required mosque information' },
+        { success: false, error: 'Invalid coordinates provided. Must be valid geographical latitude and longitude.' },
+        { status: 400 }
+      );
+    }
+
+    // 3. Sanitize inputs
+    const cleanBnName = sanitizeString(mosque_name_bn);
+    const cleanEnName = sanitizeString(mosque_name_en);
+    const cleanAddress = sanitizeString(address);
+    const cleanDivision = sanitizeString(division || 'Dhaka');
+    const cleanDistrict = sanitizeString(district || 'Dhaka');
+    const cleanUpazila = sanitizeString(upazila || 'Mirpur');
+    const cleanUnion = sanitizeString(union_name || '');
+    const cleanContact = sanitizeString(contact || '');
+    const cleanImage = getSafeMosqueImage(image);
+
+    if (!cleanBnName || !cleanEnName || !cleanAddress) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required mosque information: English name, Bengali name, and address are mandatory.' },
         { status: 400 }
       );
     }
@@ -177,17 +215,17 @@ export async function POST(request: NextRequest) {
     `;
 
     const mosqueRows = await query<Record<string, unknown>>(insertMosqueSql, [
-      mosque_name_bn,
-      mosque_name_en,
-      image || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1200&q=80',
-      address,
-      division || 'Dhaka',
-      district || 'Dhaka',
-      upazila || 'Mirpur',
-      union_name || null,
+      cleanBnName,
+      cleanEnName,
+      cleanImage,
+      cleanAddress,
+      cleanDivision,
+      cleanDistrict,
+      cleanUpazila,
+      cleanUnion || null,
       parseFloat(latitude),
       parseFloat(longitude),
-      contact || null
+      cleanContact || null
     ]);
 
     const createdMosque = mosqueRows[0];
@@ -197,13 +235,13 @@ export async function POST(request: NextRequest) {
     const now = new Date();
     const nextUpdate = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
 
-    const fajr = prayer?.fajr || '05:10 AM';
-    const dhuhr = prayer?.dhuhr || '01:15 PM';
-    const asr = prayer?.asr || '04:25 PM';
-    const maghrib = prayer?.maghrib || '06:10 PM';
-    const isha = prayer?.isha || '08:00 PM';
-    const jummah = prayer?.jummah || '01:30 PM';
-    const chartImage = prayer?.image || '/images/charts/baitul_aman_chart.svg';
+    const fajr = sanitizeString(prayer?.fajr) || '05:10 AM';
+    const dhuhr = sanitizeString(prayer?.dhuhr) || '01:15 PM';
+    const asr = sanitizeString(prayer?.asr) || '04:25 PM';
+    const maghrib = sanitizeString(prayer?.maghrib) || '06:10 PM';
+    const isha = sanitizeString(prayer?.isha) || '08:00 PM';
+    const jummah = sanitizeString(prayer?.jummah) || '01:30 PM';
+    const chartImage = prayer?.image ? sanitizeString(prayer.image) : '/images/charts/baitul_aman_chart.svg';
 
     const insertPrayerSql = `
       INSERT INTO prayer_times (
@@ -225,13 +263,13 @@ export async function POST(request: NextRequest) {
       now,
       nextUpdate,
       true,
-      prayer?.ocr_raw_text || null
+      prayer?.ocr_raw_text ? sanitizeString(prayer.ocr_raw_text) : null
     ]);
 
-    // Log action
+    // Audit Log action
     await query(
       `INSERT INTO timetable_logs (mosque_id, action, details, chart_image) VALUES ($1, $2, $3, $4);`,
-      [mosqueId, 'CREATE_MOSQUE', `Created mosque ${mosque_name_en}`, chartImage]
+      [mosqueId, 'CREATE_MOSQUE', `Created mosque ${cleanEnName}`, chartImage]
     );
 
     return NextResponse.json({
