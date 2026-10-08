@@ -385,7 +385,7 @@ export function MosqueDetailsModal({ mosque, onClose, onOpenAdminUpdate, onDelet
                   borderColor: 'var(--brand-green-border)'
                 }}
               >
-                ✓ Admin Verified
+                {lang === 'bn' ? '✓ যাচাইকৃত সময়সূচি' : '✓ Verified Timetable'}
               </span>
             </div>
 

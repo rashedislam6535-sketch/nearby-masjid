@@ -622,7 +622,7 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
               <span>{lang === 'bn' ? 'এআই ওসিআর সহায়তা ও ভেরিফিকেশন নীতি:' : 'AI OCR Assistance & Verification Policy:'}</span>
             </div>
             <p className="text-amber-800 leading-relaxed">
-              <strong>Important:</strong> AI should only assist reading images. Admin must verify before saving. Never automatically publish wrong prayer times.
+              <strong>Important:</strong> AI should only assist reading images. Contributor must verify before saving. Never automatically publish wrong prayer times.
             </p>
           </div>
 
@@ -784,7 +784,7 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
                   <span>
                     {lang === 'bn' 
                       ? 'যাচাই সম্পন্ন: সময়সূচি সেভ ও প্রকাশ করুন' 
-                      : 'Admin Verified: Save & Publish Timetable'}
+                      : 'Verify & Publish Timetable'}
                   </span>
                 </button>
               </div>
