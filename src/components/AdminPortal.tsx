@@ -55,6 +55,8 @@ export const PRESET_MOSQUE_COVERS = [
   }
 ];
 
+const CLIENT_ADMIN_KEY = (process.env.NEXT_PUBLIC_ADMIN_API_KEY || 'nm_admin_secret_key_2026_bd').replace(/^["']|["']$/g, '').trim();
+
 const INITIAL_ADD_FORM = {
   mosque_name_bn: '',
   mosque_name_en: '',
@@ -319,7 +321,7 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
-          'x-admin-key': 'nm_admin_secret_key_2026_bd'
+          'x-admin-key': CLIENT_ADMIN_KEY
         },
         body: JSON.stringify({
           fajr: timetableForm.fajr,
@@ -360,7 +362,7 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'x-admin-key': 'nm_admin_secret_key_2026_bd'
+          'x-admin-key': CLIENT_ADMIN_KEY
         },
         body: JSON.stringify({
           mosque_name_bn: addForm.mosque_name_bn,
@@ -425,7 +427,7 @@ export function AdminPortal({ mosques, onRefresh, lang, preselectedMosque }: Adm
       const res = await fetch(`/api/mosques/${id}`, { 
         method: 'DELETE',
         headers: {
-          'x-admin-key': 'nm_admin_secret_key_2026_bd'
+          'x-admin-key': CLIENT_ADMIN_KEY
         }
       });
       const data = await res.json();
